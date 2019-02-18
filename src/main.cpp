@@ -1,7 +1,7 @@
 //
 // Created by timog on 16.02.19.
 //
-#include "../ext/socketwrapper/src/TCPSocket.hpp"
+#include <socketwrapper/TCPSocket.hpp>
 #include <string>
 #include <iostream>
 
