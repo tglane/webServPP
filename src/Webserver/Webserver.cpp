@@ -19,7 +19,6 @@ Webserver::~Webserver()
 void Webserver::serve()
 {
     //std::cout << "Listening on http://localhost:8080" << std::endl;
-    char response[] = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n<!DOCTYPE html><html><head><title>Bye-bye baby bye-bye</title><body><h1>Goodbye, world!</h1><form id=\"main_form\" method=\"post\"><textarea>Hallo</textarea id=\"id_text\"><input type=\"submit\"></form></body></html>\r\n";
 
     while(1)
     {
@@ -28,7 +27,8 @@ void Webserver::serve()
         Request::Ptr r = std::make_shared<Request>();
         r->parse(conn->readOnce());
 
-        conn->writeOnce(response);
+        Response::Ptr res = std::make_shared<Response>(conn);
+        res->send();
         conn->close();
     }
 

@@ -9,6 +9,7 @@
 #include <socketwrapper/TCPSocket.hpp>
 
 #include "Request.hpp"
+#include "Response.hpp"
 
 /**
  * @brief Simple Webserver that parses a http request and generates a response

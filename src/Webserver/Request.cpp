@@ -112,5 +112,20 @@ void Request::parse_params(string param_string)
 bool Request::isValid()
 {
     //TODO
+    if(m_method != "post" && m_method != "POST" && m_method != "get" && m_method != "GET" &&
+        m_method != "head" && m_method != "HEAD" && m_method != "put" && m_method != "PUT" &&
+        m_method != "delete" && m_method != "DELETE" && m_method != "trace" && m_method != "TRACE" &&
+        m_method != "patch" && m_method != "PATCH")
+    {
+        return false;
+    }
+    if(m_path.find("..") != string::npos)
+    {
+        return false;
+    }
+    if(m_protocol.find("HTTP/") == string::npos)
+    {
+        return false;
+    }
     return true;
 }

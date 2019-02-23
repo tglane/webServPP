@@ -4,8 +4,9 @@ project(cppwebserver)
 set(CMAKE_CXX_STANDARD 11)
 
 set(SOURCES
-        src/Webserver.cpp
-        src/Request.cpp
+        src/Webserver/Webserver.cpp
+        src/Webserver/Request.cpp
+        src/Webserver/Response.cpp
         src/main.cpp
    )
 
