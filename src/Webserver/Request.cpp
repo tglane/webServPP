@@ -45,7 +45,7 @@ void Request::parse(char* request)
     auto it = m_headers.find("Cookie");
     if(it != m_headers.end())
     {
-        //TODO: Call cookie parser
+        parse_cookies(it->second);
     }
 
     /* Parse POST parameters */
@@ -87,10 +87,7 @@ void Request::parse_params(string param_string)
     //std::cout << param_string << std::endl;
     if(param_string.find('#') == string::npos)
     {
-        if(param_string.find('&') != string::npos)
-        {
-            param_string.append("&");
-        }
+        param_string.append("&");
     }
 
     int tmp = 0;
@@ -103,15 +100,33 @@ void Request::parse_params(string param_string)
             //std::cout << param << std::endl;
             size_t pos = param.find('=');
             std::pair<string, string> p(param.substr(0,pos), param.substr(pos + 1));
-            std::cout << p.first << " | " << p.second << std::endl;
+            //std::cout << p.first << " | " << p.second << std::endl;
             m_params.insert(p);
         }
     }
 }
 
+void Request::parse_cookies(string cookies)
+{
+    //std::cout << cookies << std::endl;
+    std::istringstream iss(cookies);
+    std::vector<string> cookies_split((std::istream_iterator<string>(iss)),
+                                          std::istream_iterator<string>());
+
+    for(auto it = cookies_split.begin(); it != cookies_split.end(); it++)
+    {
+        if((*it).find(";") != string::npos)
+        {
+            *it = (*it).substr(0, (*it).length() - 1);
+        }
+        size_t pos = (*it).find("=");
+        Cookie c((*it).substr(0, pos), (*it).substr(pos + 1));
+        m_cookies.insert(std::pair<string, Cookie>((*it).substr(0, pos), c));
+    }
+}
+
 bool Request::isValid()
 {
-    //TODO
     if(m_method != "post" && m_method != "POST" && m_method != "get" && m_method != "GET" &&
         m_method != "head" && m_method != "HEAD" && m_method != "put" && m_method != "PUT" &&
         m_method != "delete" && m_method != "DELETE" && m_method != "trace" && m_method != "TRACE" &&

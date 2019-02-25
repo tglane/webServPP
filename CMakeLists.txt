@@ -7,6 +7,7 @@ set(SOURCES
         src/Webserver/Webserver.cpp
         src/Webserver/Request.cpp
         src/Webserver/Response.cpp
+        src/Webserver/Cookie.cpp
         src/main.cpp
    )
 

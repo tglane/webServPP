@@ -18,16 +18,16 @@ Webserver::~Webserver()
 
 void Webserver::serve()
 {
-    //std::cout << "Listening on http://localhost:8080" << std::endl;
+    std::cout << "Listening on http://localhost:8080\n" << std::endl;
 
     while(1)
     {
         socketwrapper::TCPSocket::Ptr conn = m_socket->accept();
 
-        Request::Ptr r = std::make_shared<Request>();
-        r->parse(conn->readOnce());
+        Request::Ptr req = std::make_shared<Request>();
+        req->parse(conn->readOnce());
 
-        Response::Ptr res = std::make_shared<Response>(conn);
+        Response::Ptr res = std::make_shared<Response>(conn, req);
         res->send();
         conn->close();
     }

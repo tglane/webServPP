@@ -13,6 +13,8 @@
 #include <vector>
 #include <memory>
 
+#include "Cookie.hpp"
+
 using std::string;
 using std::map;
 
@@ -50,7 +52,7 @@ public:
 
     std::map<string, string> getParams() { return m_params; }
 
-    std::map<string, string> getCookies() { return m_cookies; }
+    std::map<string, Cookie> getCookies() { return m_cookies; }
 
 private:
 
@@ -66,17 +68,23 @@ private:
      */
     void parse_params(string param_string);
 
-    string m_request; /// unparsed request
+    /**
+     * Constructs cookie objects from a http request header
+     * @param cookies http header containing the cookies
+     */
+    void parse_cookies(string cookies);
+
+    string m_request;    /// unparsed request
 
     string m_method;     /// http method used by this request (e.g. post, get, ...)
     string m_protocol;   /// protocol of this request - should be HTTP/*.*
-    string m_resource;  /// resource addressed by this request
+    string m_resource;   /// resource addressed by this request
     string m_path;       /// path of the resource addressed by this request
     string m_fragment;
 
     map<string, string> m_params; /// contains names and values of the query string
     map<string, string> m_headers; /// contains names and values of the http request headers
-    map<string, string> m_cookies; /// contains names and values of the cookies
+    map<string, Cookie> m_cookies; /// contains names and values of the cookies
 
 };
 
