@@ -5,6 +5,53 @@
 #include "Response.hpp"
 #include <iostream>
 
+void Response::send()
+{
+    string response;
+
+    /* Set some response fields if missing */
+    if(m_code.empty())
+    {
+        m_code = "200";
+    }
+    if(m_headers.find("Content-Type") == m_headers.end())
+    {
+        m_headers.insert(std::pair<string, string>("Content-Type", "text/html; charset=UTF-8"));
+    }
+    std::time_t now(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
+
+    /* Begin with response line */
+    response.append("HTTP/1.1 " + m_code + " " + getPhrase(m_code) + "\r\n" + "Date: " + std::ctime(&now));
+
+    /* Append all cookies to response */
+    for(auto it = m_cookies.begin(); it != m_cookies.end(); it++)
+    {
+        response.append((*it).second.buildHeader() + "\r\n");
+    }
+
+    /* Append all headers to response */
+    for(auto it = m_headers.begin(); it != m_headers.end(); it++)
+    {
+        response.append(it->first + ": " + it->second + "\r\n");
+    }
+
+    /* Append body to response line */
+    response.append("\r\n");
+    response.append(m_body);
+
+    /* Convert resonse to char* and send it to the client */
+    char* res_arr = new char[response.length()+1];
+    strcpy(res_arr, response.c_str());
+    std::cout << response << std::endl;
+    m_conn->write(res_arr);
+    delete[] res_arr;
+}
+
+void Response::sendTemplate()
+{
+
+}
+
 void Response::addHeader(string key, string value)
 {
     auto it = m_headers.find(key);
@@ -34,44 +81,6 @@ void Response::setContentType(string contentType)
     {
         m_headers.insert(std::pair<string, string>("Content-Type", contentType));
     }
-}
-
-void Response::setParams(string code, string body)
-{
-    m_code = std::move(code);
-    m_body = std::move(body);
-}
-
-void Response::send()
-{
-    //TODO !!!
-    char body[] = "<!DOCTYPE html><html><head><title>Bye-bye baby bye-bye</title><body><h1>Goodbye, world!</h1><form id=\"main_form\" method=\"post\"><textarea>Hallo</textarea id=\"id_text\"><input type=\"submit\"></form></body></html>\r\n";
-    char head[] = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
-    string response;
-
-    if(m_code.empty())
-    {
-        m_code = "200";
-    }
-    Cookie c("testname", "Testvalueeee");
-    c.setExpiryDate(10);
-    c.setHttpOnly(true);
-    std::cout << c.buildHeader() << std::endl;
-    response.append("HTTP/1.1 " + m_code + " " + getPhrase(m_code) + "\r\n");
-    response.append(c.buildHeader() + "\r\n");
-    response.append("Content-Type: text/html; charset=UTF-8\r\n\r\n");
-    string s(body);
-    response.append(s);
-
-    char* res_arr = new char[response.length()+1];
-    strcpy(res_arr, response.c_str());
-    m_conn->write(res_arr);
-    delete[] res_arr;
-}
-
-void Response::sendTemplate()
-{
-
 }
 
 string Response::getPhrase(string code)

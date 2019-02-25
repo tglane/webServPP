@@ -24,17 +24,19 @@ public:
 
     Response(socketwrapper::TCPSocket::Ptr& conn, Request::Ptr &req) : m_conn(conn), m_req(req) {}
 
+    void send();
+
+    void sendTemplate();
+
     void addHeader(string key, string value);
 
     void addCookie(Cookie cookie);
 
     void setContentType(string contentType);
 
-    void setParams(string code = "", string body = "");
+    void setCode(string code) { m_code = code; }
 
-    void send();
-
-    void sendTemplate();
+    void setBody(string body) { m_body = body; }
 
 private:
 
