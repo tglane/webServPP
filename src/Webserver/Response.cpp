@@ -52,6 +52,13 @@ void Response::sendTemplate()
 
 }
 
+void Response::sendRedirect(string url)
+{
+    addHeader("Location", std::move(url));
+    setCode("302");
+    send();
+}
+
 void Response::addHeader(string key, string value)
 {
     auto it = m_headers.find(key);
@@ -85,5 +92,11 @@ void Response::setContentType(string contentType)
 
 string Response::getPhrase(string code)
 {
-    return "OK";
+    string codephrase = Statuscodes::getPhrase(std::move(code));
+    if(codephrase.empty())
+    {
+        setCode("500");
+        return "Unknown statuscode requested in code";
+    }
+    return codephrase;
 }

@@ -30,7 +30,6 @@ string Cookie::buildHeader()
     if(m_secure) { header.append("; secure"); }
     if(!m_expires.empty()) { header.append("; Expires=" + m_expires); }
 
-
     return header;
 }
 

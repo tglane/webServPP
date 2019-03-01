@@ -12,26 +12,54 @@
 
 #include "Cookie.hpp"
 #include "Request.hpp"
+#include "util/Statuscodes.hpp"
 
 using std::string;
 using std::map;
 
+/**
+ * @brief Class representing a http response
+ * Stores data of a http response in member variables and sends them to a client
+ */
 class Response {
 
 public:
 
     using Ptr = std::shared_ptr<Response>;
 
+    /// Constructor
     Response(socketwrapper::TCPSocket::Ptr& conn, Request::Ptr &req) : m_conn(conn), m_req(req) {}
 
+    /**
+     * @brief Creates http response from member of the objects
+     * Creates the response line, the header fields and the response body
+     */
     void send();
 
     void sendTemplate();
 
+    /**
+     * @brief Adds header Location: url, sets status to 302 and calls method send() to send a redirect to url
+     * @param url to redirect to
+     */
+    void sendRedirect(string url);
+
+    /**
+     * Adds a header to m_headers with key: value for the response
+     * @param key
+     * @param value
+     */
     void addHeader(string key, string value);
 
+    /**
+     * Adds a cookie to m_cookies with name: cookie
+     * @param cookie
+     */
     void addCookie(Cookie cookie);
 
+    /**
+     * Sets the header field Content-Type to the given string
+     */
     void setContentType(string contentType);
 
     void setCode(string code) { m_code = code; }
@@ -55,6 +83,8 @@ private:
 
     map<string, string> m_headers;
     map<string, Cookie> m_cookies;
+
+    static map<int, string> c_codes;
 
 };
 

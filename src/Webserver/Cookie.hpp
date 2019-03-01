@@ -14,15 +14,24 @@
 
 using std::string;
 
+/**
+ * @brief Representation of a http cookie to send to a client
+ * Stores all information of a cookie in member variables
+ */
 class Cookie {
 
 public:
 
     using Ptr = std::shared_ptr<Cookie>;
 
+    /// Constructor
     Cookie(string name, string value, bool httpOnly = false, bool secure = false, string comment = "",
         string domain = "", string max_age = "",string path = "", int expires = 0);
 
+    /**
+     * Creates a string representation of the member fields to set this cookie
+     * @return string representation of this cookie
+     */
     string buildHeader();
 
     void setExpiryDate(int days);
@@ -35,6 +44,10 @@ public:
 
 private:
 
+    /**
+     * Parameters of a http cookie
+     * Not all headers are to set
+     */
     string m_name;
     string m_value;
     bool m_httpOnly;

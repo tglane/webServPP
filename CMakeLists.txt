@@ -4,6 +4,7 @@ project(cppwebserver)
 set(CMAKE_CXX_STANDARD 11)
 
 set(SOURCES
+        src/Webserver/util/Statuscodes.cpp
         src/Webserver/Webserver.cpp
         src/Webserver/Request.cpp
         src/Webserver/Response.cpp

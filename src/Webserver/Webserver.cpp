@@ -37,7 +37,6 @@ void Webserver::serve()
         {
             res->addCookie((*it).second);
         }
-
         res->setBody(body);
         res->send();
         conn->close();
