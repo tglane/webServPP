@@ -6,10 +6,14 @@
 #define CPPWEBSERVER_WEBSERVER_HPP
 
 #include <memory>
+#include <list>
 #include <socketwrapper/TCPSocket.hpp>
 
 #include "Request.hpp"
 #include "Response.hpp"
+#include "apps/App.hpp"
+
+using std::list;
 
 /**
  * @brief Simple Webserver that parses a http request and generates a response
@@ -17,6 +21,8 @@
 class Webserver {
 
 public:
+
+    using Ptr = std::shared_ptr<Webserver>;
 
     /**
      * @brief Constructor
@@ -30,6 +36,10 @@ public:
      */
     ~Webserver();
 
+    void addApp(App app);
+
+    void addRoute(string route, void (*handler));
+
     /**
      * @brief starts the main loop of the webserver
      */
@@ -38,6 +48,8 @@ public:
 private:
 
     socketwrapper::TCPSocket::Ptr m_socket;
+
+    list<App> m_apps; /// List with registered Apps
 
 };
 

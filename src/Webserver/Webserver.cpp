@@ -16,12 +16,21 @@ Webserver::~Webserver()
     m_socket->close();
 }
 
+void Webserver::addApp(App app)
+{
+    m_apps.push_back(app);
+}
+
+void Webserver::addRoute(string route, void *handler)
+{
+
+}
+
 void Webserver::serve()
 {
     std::cout << "Listening on http://localhost:8080\n" << std::endl;
 
     char body[] = "<!DOCTYPE html><html><head><title>Bye-bye baby bye-bye</title><body><h1>Goodbye, world!</h1><form id=\"main_form\" method=\"post\"><textarea>Hallo</textarea id=\"id_text\"><input type=\"submit\"></form></body></html>\r\n";
-
 
     while(1)
     {
