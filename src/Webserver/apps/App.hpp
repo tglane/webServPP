@@ -5,22 +5,56 @@
 #ifndef CPPWEBSERVER_APP_HPP
 #define CPPWEBSERVER_APP_HPP
 
+#include <memory>
 #include <string>
+#include <map>
+#include <functional>
 
+#include "../Response.hpp"
+#include "../Request.hpp"
 
+using std::map;
 using std::string;
 
+class Webserver;
+
+/**
+ * Wraps a web application to be used by the webserver
+ * Adds its routes to the server and gives callback methods for all routes
+ */
 class App {
 
 public:
 
-    App() = default;
+    /// Constructor
+    explicit App() = default;
 
-    void addRoute(string route, void (*handler));
+    /**
+     * Needs to be implemented by all Apps
+     * Call addRoute with all routes to add from this method
+     */
+    virtual void registerRoutes() = 0;
 
-private:
+    /**
+     * Searches in m_routes for the given route and executes the handler to the route
+     * @param route
+     * @return true if a route was found, false else
+     */
+    bool getCallback(string route, Request::Ptr req, Response::Ptr res);
 
+protected:
 
+    /**
+     * Adds a given route and its callback method to m_routes
+     * @param route string representing the http route
+     * @param handler callback method for the route -> must be implemented by the app!
+     */
+    void addRoute(string route, std::function<void()>);
+
+    Request::Ptr m_req;     /// Request to the actual call
+    Response::Ptr m_res;    /// Response to the the actual call
+
+    map<string, std::function<void()>> m_routes; /// key = route path; value = handler function
 
 };
 

@@ -16,14 +16,15 @@ Webserver::~Webserver()
     m_socket->close();
 }
 
-void Webserver::addApp(App app)
+void Webserver::addApp(std::shared_ptr<App> app)
 {
+    app->registerRoutes();
     m_apps.push_back(app);
 }
 
-void Webserver::addRoute(string route, void *handler)
+void Webserver::addMiddelware()
 {
-
+    //TODO
 }
 
 void Webserver::serve()
@@ -34,20 +35,33 @@ void Webserver::serve()
 
     while(1)
     {
+        //TODO set a special response if there are no registered apps
+
         socketwrapper::TCPSocket::Ptr conn = m_socket->accept();
 
         Request::Ptr req = std::make_shared<Request>();
         req->parse(conn->readOnce());
-
         Response::Ptr res = std::make_shared<Response>(conn, req);
 
-        std::map<string, Cookie> m = req->getCookies();
-        for(auto it = m.begin(); it != m.end(); it++)
+        //TODO call processRequesest from middelwares
+
+        bool processed = false;
+        for(auto it = m_apps.begin(); it != m_apps.end(); it++)
         {
-            res->addCookie((*it).second);
+            if((*it)->getCallback(req->getPath(), req, res) == true)
+            {
+                processed = true;
+            }
         }
-        res->setBody(body);
-        res->send();
+
+        //TODO call processRespond from middelwares
+
+        if(!processed)
+        {
+            //TODO send response with code 404 not found and small html site with message
+        }
+        else res->send();
+
         conn->close();
     }
 

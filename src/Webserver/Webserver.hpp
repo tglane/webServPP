@@ -36,9 +36,13 @@ public:
      */
     ~Webserver();
 
-    void addApp(App app);
+    /**
+     * Adds a given app shared_ptr to m_apps and registers the routes of the app
+     * @param app
+     */
+    void addApp(std::shared_ptr<App> app);
 
-    void addRoute(string route, void (*handler));
+    void addMiddelware();
 
     /**
      * @brief starts the main loop of the webserver
@@ -47,9 +51,9 @@ public:
 
 private:
 
-    socketwrapper::TCPSocket::Ptr m_socket;
+    socketwrapper::TCPSocket::Ptr m_socket; /// Underlying TCP Socket for communication
 
-    list<App> m_apps; /// List with registered Apps
+    list<std::shared_ptr<App>> m_apps; /// List with registered Apps
 
 };
 
