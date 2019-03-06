@@ -11,8 +11,12 @@
 
 int main(int argc, char** argv)
 {
-    /* Create apps and add it to the server using w.addApp(app_name) */
     Webserver w(8080, 5);
+
+    /* Create apps and add it to the server using w.addApp(shared_ptr<app_name> name) */
+
+    /* Create middlewares and add it to the server using w.addMiddleware(shared_ptr<middleware_name> name) */
+
     w.serve();
 
 }

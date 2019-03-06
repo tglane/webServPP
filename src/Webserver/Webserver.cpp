@@ -22,9 +22,9 @@ void Webserver::addApp(std::shared_ptr<App> app)
     m_apps.push_back(app);
 }
 
-void Webserver::addMiddelware(std::shared_ptr<Middleware> middelware)
+void Webserver::addMiddleware(std::shared_ptr<Middleware> middleware)
 {
-    m_middelwares.push_back(middelware);
+    m_middelwares.push_back(middleware);
 }
 
 void Webserver::serve()

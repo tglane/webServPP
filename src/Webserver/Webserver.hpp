@@ -48,7 +48,7 @@ public:
      *  in the main loop
      * @param middleware
      */
-    void addMiddelware(std::shared_ptr<Middleware> middleware);
+    void addMiddleware(std::shared_ptr<Middleware> middleware);
 
     /**
      * @brief starts the main loop of the webserver
