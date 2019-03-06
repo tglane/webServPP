@@ -12,6 +12,7 @@
 #include "Request.hpp"
 #include "Response.hpp"
 #include "apps/App.hpp"
+#include "middlewares/Middleware.hpp"
 
 using std::list;
 
@@ -42,7 +43,12 @@ public:
      */
     void addApp(std::shared_ptr<App> app);
 
-    void addMiddelware();
+    /**
+     * Adds a given middelware to m_middelwares to call processRequest() and processResponse()
+     *  in the main loop
+     * @param middleware
+     */
+    void addMiddelware(std::shared_ptr<Middleware> middleware);
 
     /**
      * @brief starts the main loop of the webserver
@@ -54,6 +60,8 @@ private:
     socketwrapper::TCPSocket::Ptr m_socket; /// Underlying TCP Socket for communication
 
     list<std::shared_ptr<App>> m_apps; /// List with registered Apps
+
+    list<std::shared_ptr<Middleware>> m_middelwares; /// List with registered Middelwares
 
 };
 

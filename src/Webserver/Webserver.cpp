@@ -22,16 +22,14 @@ void Webserver::addApp(std::shared_ptr<App> app)
     m_apps.push_back(app);
 }
 
-void Webserver::addMiddelware()
+void Webserver::addMiddelware(std::shared_ptr<Middleware> middelware)
 {
-    //TODO
+    m_middelwares.push_back(middelware);
 }
 
 void Webserver::serve()
 {
     std::cout << "Listening on http://localhost:8080\n" << std::endl;
-
-    char body[] = "<!DOCTYPE html><html><head><title>Bye-bye baby bye-bye</title><body><h1>Goodbye, world!</h1><form id=\"main_form\" method=\"post\"><textarea>Hallo</textarea id=\"id_text\"><input type=\"submit\"></form></body></html>\r\n";
 
     while(1)
     {
@@ -43,8 +41,13 @@ void Webserver::serve()
         req->parse(conn->readOnce());
         Response::Ptr res = std::make_shared<Response>(conn, req);
 
-        //TODO call processRequesest from middelwares
+        /* Process request from all registered middlewares */
+        for(auto it = m_middelwares.begin(); it != m_middelwares.end(); it++)
+        {
+            (*it)->processRequest(req, res);
+        }
 
+        /* Try to process the called route from a registered app */
         bool processed = false;
         for(auto it = m_apps.begin(); it != m_apps.end(); it++)
         {
@@ -54,14 +57,22 @@ void Webserver::serve()
             }
         }
 
-        //TODO call processRespond from middelwares
-
         if(!processed)
         {
-            //TODO send response with code 404 not found and small html site with message
+            res->setCode("404");
+            char notFoundBody[] = "<!DOCTYPE html><html><head><title>404 - Not Found</title><body><h1>404 - Not Found</h1></body></html>\r\n";
+            res->setBody(notFoundBody);
         }
-        else res->send();
+        else
+        {
+            /* If route was processed process response from registered middlewares */
+            for(auto it = m_middelwares.begin(); it != m_middelwares.end(); it++)
+            {
+                (*it)->processResponse(res);
+            }
+        }
 
+        res->send();
         conn->close();
     }
 
