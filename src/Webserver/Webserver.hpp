@@ -5,7 +5,6 @@
 #ifndef CPPWEBSERVER_WEBSERVER_HPP
 #define CPPWEBSERVER_WEBSERVER_HPP
 
-#include <memory>
 #include <list>
 #include <socketwrapper/TCPSocket.hpp>
 

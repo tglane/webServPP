@@ -36,7 +36,11 @@ public:
      */
     void send();
 
-    void sendTemplate();
+    /**
+     * @brief Reads a template file and substitutes its placeholders to build the http body and sets m_body
+     * @param templateFile filename of the html template located in src/templates
+     */
+    void setBodyFromTemplate(string templateFile);
 
     /**
      * @brief Adds header Location: url, sets status to 302 and calls method send() to send a redirect to url

@@ -4,6 +4,8 @@
 
 #include "Response.hpp"
 #include <iostream>
+#include <fstream>
+#include "templating/Jinja2CppLight.h"
 
 void Response::send()
 {
@@ -39,7 +41,7 @@ void Response::send()
     response.append("\r\n");
     response.append(m_body);
 
-    /* Convert resonse to char* and send it to the client */
+    /* Convert response to char* and send it to the client */
     char* res_arr = new char[response.length()+1];
     strcpy(res_arr, response.c_str());
     std::cout << response << std::endl;
@@ -47,8 +49,22 @@ void Response::send()
     delete[] res_arr;
 }
 
-void Response::sendTemplate()
+void Response::setBodyFromTemplate(string templateFile)
 {
+    /* If templateFile exists, read it */
+    if(templateFile.find("..") != string::npos)
+    {
+        throw "Only pass a template filename without.";
+    }
+    std::ifstream ifs("templates/" + templateFile);
+    if(!ifs.good())
+    {
+        throw "No template found.";
+    }
+    string htmlTemplate((std::istreambuf_iterator<char>(ifs)),
+                        (std::istreambuf_iterator<char>()));
+
+    //TODO substitute template
 
 }
 
