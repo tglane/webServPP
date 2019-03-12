@@ -15,7 +15,6 @@ int main(int argc, char** argv)
     Webserver w(8080, 5);
 
     /* Create apps and add it to the server using w.addApp(shared_ptr<app_name> name) */
-    w.addApp(std::make_shared<TestApp>());
 
     /* Create middlewares and add it to the server using w.addMiddleware(shared_ptr<middleware_name> name) */
 

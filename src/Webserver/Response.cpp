@@ -2,10 +2,14 @@
 // Created by timog on 23.02.19.
 //
 
-#include "Response.hpp"
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <utility>
+
 #include "templating/Jinja2CppLight.h"
+
+#include "Response.hpp"
 
 void Response::send()
 {
@@ -49,23 +53,42 @@ void Response::send()
     delete[] res_arr;
 }
 
-void Response::setBodyFromTemplate(string templateFile)
+void Response::setBodyFromTemplate(string templateFile, map<string, boost::variant<string, list<string>>> values)
 {
-    /* If templateFile exists, read it */
-    if(templateFile.find("..") != string::npos)
-    {
-        throw "Only pass a template filename without.";
-    }
-    std::ifstream ifs("templates/" + templateFile);
+    /* Open template file and read it into a string if found */
+    std::ifstream ifs("../src/templates/" + templateFile);
     if(!ifs.good())
     {
-        throw "No template found.";
+        throw "No template in src/templates/ found.";
     }
-    string htmlTemplate((std::istreambuf_iterator<char>(ifs)),
-                        (std::istreambuf_iterator<char>()));
+    std::stringstream sstr;
+    sstr << ifs.rdbuf();
+    string htmlTemplate(sstr.str());
+    setBody(htmlTemplate);
 
+    /* Substitue template file placeholders with the given values */
     //TODO substitute template
+    Jinja2CppLight::Template aTemplate(htmlTemplate);
 
+    for(auto it = values.begin(); it != values.end(); it++)
+    {
+        try {
+            string s = boost::get<string>(it->second);
+            aTemplate.setValue(it->first, s);
+        } catch (const boost::bad_get&) {}
+
+        try {
+            list<string> l = boost::get<list<string>>(it->second);
+            Jinja2CppLight::TupleValue tmp;
+            for(auto ite = l.begin(); ite != l.end(); ite++)
+            {
+                tmp.addValue(*ite);
+            }
+            aTemplate.setValue(it->first, tmp);
+        } catch (const boost::bad_get&) {}
+    }
+
+    setBody(aTemplate.render());
 }
 
 void Response::sendRedirect(string url)
@@ -81,16 +104,20 @@ void Response::addHeader(string key, string value)
     if(it != m_headers.end())
     {
         it->second = value;
-    }
-    else
-    {
+    } else {
         m_headers.insert(std::pair<string, string>(key, value));
     }
 }
 
 void Response::addCookie(Cookie cookie)
 {
-    m_cookies.insert(std::pair<string, Cookie>(cookie.getName(), cookie));
+    auto it = m_cookies.find(cookie.getName());
+    if(it != m_cookies.end())
+    {
+        it->second = cookie;
+    } else {
+        m_cookies.insert(std::pair<string, Cookie>(cookie.getName(), cookie));
+    }
 }
 
 void Response::setContentType(string contentType)

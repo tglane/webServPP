@@ -9,13 +9,17 @@
 #include <string>
 #include <map>
 #include <memory>
+#include <list>
+#include <boost/variant.hpp>
 
 #include "Cookie.hpp"
 #include "Request.hpp"
 #include "util/Statuscodes.hpp"
 
+
 using std::string;
 using std::map;
+using std::list;
 
 /**
  * @brief Class representing a http response
@@ -39,8 +43,10 @@ public:
     /**
      * @brief Reads a template file and substitutes its placeholders to build the http body and sets m_body
      * @param templateFile filename of the html template located in src/templates
+     * @param values map containing strings as placeholders in the template to replace with strings or lists of strings
+     *          from this map
      */
-    void setBodyFromTemplate(string templateFile);
+    void setBodyFromTemplate(string templateFile, map<string, boost::variant<string, list<string>>> values);
 
     /**
      * @brief Adds header Location: url, sets status to 302 and calls method send() to send a redirect to url
@@ -88,9 +94,6 @@ private:
     map<string, string> m_headers;
     map<string, Cookie> m_cookies;
 
-    static map<int, string> c_codes;
-
 };
-
 
 #endif //CPPWEBSERVER_RESPONSE_HPP
