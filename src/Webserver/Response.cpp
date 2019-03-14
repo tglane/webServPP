@@ -5,7 +5,6 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <utility>
 
 #include "templating/Jinja2CppLight.h"
 
@@ -53,7 +52,7 @@ void Response::send()
     delete[] res_arr;
 }
 
-void Response::setBodyFromTemplate(string templateFile, map<string, boost::variant<string, list<string>>> values)
+void Response::setBodyFromTemplate(string templateFile, map<string, boost::variant<string, int, list<string>>> values)
 {
     /* Open template file and read it into a string if found */
     std::ifstream ifs("../src/templates/" + templateFile);
@@ -73,14 +72,16 @@ void Response::setBodyFromTemplate(string templateFile, map<string, boost::varia
     for(auto it = values.begin(); it != values.end(); it++)
     {
         try {
-            string s = boost::get<string>(it->second);
-            aTemplate.setValue(it->first, s);
+            aTemplate.setValue(it->first, boost::get<string>(it->second));
         } catch (const boost::bad_get&) {}
 
         try {
-            list<string> l = boost::get<list<string>>(it->second);
+            aTemplate.setValue(it->first, boost::get<int>(it->second));
+        } catch (const boost::bad_get&) {}
+
+        try {
             Jinja2CppLight::TupleValue tmp;
-            for(auto ite = l.begin(); ite != l.end(); ite++)
+            for(auto ite = boost::get<list<string>>(it->second).begin(); ite != boost::get<list<string>>(it->second).end(); ite++)
             {
                 tmp.addValue(*ite);
             }

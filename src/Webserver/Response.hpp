@@ -46,7 +46,7 @@ public:
      * @param values map containing strings as placeholders in the template to replace with strings or lists of strings
      *          from this map
      */
-    void setBodyFromTemplate(string templateFile, map<string, boost::variant<string, list<string>>> values);
+    void setBodyFromTemplate(string templateFile, map<string, boost::variant<string, int, list<string>>> values);
 
     /**
      * @brief Adds header Location: url, sets status to 302 and calls method send() to send a redirect to url

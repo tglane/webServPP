@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Bye-bye baby bye-bye</title>
+</head>
+<body>
+    <h1>{{headline}}</h1>
+    {{text}}
+    <br>
+    {% for var in its %}
+        {{ var }}
+    {% endfor %} <br> Und hier geht es weiter. Mit einer Schleife zählen: <br>
+    {% for i in range(it) %}
+        Zahl: {{ i }};
+    {% endfor %} <br>
+    {% if it %} Und noch eine Bedingung die nur angezeigt wird, wenn vorher gezählt wurde {% endif %}
+</body>
+</html>

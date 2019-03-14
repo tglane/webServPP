@@ -51,7 +51,7 @@ void Webserver::serve()
         bool processed = false;
         for(auto it = m_apps.begin(); it != m_apps.end(); it++)
         {
-            if((*it)->getCallback(req->getPath(), req, res) == true)
+            if((*it)->getCallback(req->getPath(), req, res))
             {
                 processed = true;
             }

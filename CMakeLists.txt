@@ -13,6 +13,8 @@ set(SOURCES
         src/Webserver/Response.cpp
         src/Webserver/Cookie.cpp
         src/main.cpp
+
+        src/Webserver/apps/TestApp.cpp
    )
 
 find_library(SOCKETWRAPPER_LIB socketwrapper)
