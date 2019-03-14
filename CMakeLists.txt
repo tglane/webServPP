@@ -4,17 +4,17 @@ project(cppwebserver)
 set(CMAKE_CXX_STANDARD 11)
 
 set(SOURCES
-        src/Webserver/util/Statuscodes.cpp
-        src/Webserver/templating/Jinja2CppLight.cpp
-        src/Webserver/templating/stringhelper.cpp
-        src/Webserver/apps/App.cpp
-        src/Webserver/Webserver.cpp
-        src/Webserver/Request.cpp
-        src/Webserver/Response.cpp
-        src/Webserver/Cookie.cpp
+        src/webserver/util/Statuscodes.cpp
+        src/webserver/templating/Jinja2CppLight.cpp
+        src/webserver/templating/stringhelper.cpp
+        src/webserver/apps/App.cpp
+        src/webserver/Webserver.cpp
+        src/webserver/Request.cpp
+        src/webserver/Response.cpp
+        src/webserver/Cookie.cpp
         src/main.cpp
 
-        src/Webserver/apps/TestApp.cpp
+        src/webserver/apps/TestApp.cpp
    )
 
 find_library(SOCKETWRAPPER_LIB socketwrapper)

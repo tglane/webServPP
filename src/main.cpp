@@ -4,11 +4,11 @@
 #include <string>
 #include <iostream>
 
-#include "Webserver/Webserver.hpp"
-#include "Webserver/apps/App.hpp"
+#include "webserver/Webserver.hpp"
+#include "webserver/apps/App.hpp"
 
 /* Include app headers */
-#include "Webserver/apps/TestApp.hpp"
+#include "webserver/apps/TestApp.hpp"
 
 int main(int argc, char** argv)
 {
