@@ -2,6 +2,8 @@
 // Created by timog on 19.02.19.
 //
 
+#include <future>
+
 #include "Webserver.hpp"
 
 Webserver::Webserver(int port, int queue_size)
@@ -35,45 +37,55 @@ void Webserver::serve()
     {
         //TODO set a special response if there are no registered apps
 
-        socketwrapper::TCPSocket::Ptr conn = m_socket->accept();
+        /* Handle incoming requests within a new thread using async */
+        std::async(std::launch::async, &Webserver::handleConnection, this, m_socket->accept());
+    }
+}
 
-        Request::Ptr req = std::make_shared<Request>();
-        req->parse(conn->readOnce());
-        Response::Ptr res = std::make_shared<Response>(conn, req);
+void Webserver::handleConnection(std::shared_ptr<socketwrapper::TCPSocket> conn)
+{
+    Request::Ptr req = std::make_shared<Request>();
 
-        /* Process request from all registered middlewares */
-        for(auto it = m_middelwares.begin(); it != m_middelwares.end(); it++)
-        {
-            (*it)->processRequest(req, res);
-        }
-
-        /* Try to process the called route from a registered app */
-        bool processed = false;
-        for(auto it = m_apps.begin(); it != m_apps.end(); it++)
-        {
-            if((*it)->getCallback(req->getPath(), req, res))
-            {
-                processed = true;
-            }
-        }
-
-        if(!processed)
-        {
-            res->setCode("404");
-            char notFoundBody[] = "<!DOCTYPE html><html><head><title>404 - Not Found</title><body><h1>404 - Not Found</h1></body></html>\r\n";
-            res->setBody(notFoundBody);
-        }
-        else
-        {
-            /* If route was processed process response from registered middlewares */
-            for(auto it = m_middelwares.begin(); it != m_middelwares.end(); it++)
-            {
-                (*it)->processResponse(res);
-            }
-        }
-
-        res->send();
-        conn->close();
+    /* wait until data is available */
+    while(conn->bytes_available() == 0)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
+    req->parse(conn->readAll());
+    Response::Ptr res = std::make_shared<Response>(conn, req);
+
+    /* Process request from all registered middlewares */
+    for(auto it = m_middelwares.begin(); it != m_middelwares.end(); it++)
+    {
+        (*it)->processRequest(req, res);
+    }
+
+    /* Try to process the called route from a registered app */
+    bool processed = false;
+    for(auto it = m_apps.begin(); it != m_apps.end(); it++)
+    {
+        if((*it)->getCallback(req->getPath(), req, res))
+        {
+            processed = true;
+        }
+    }
+
+    if(!processed)
+    {
+        res->setCode("404");
+        char notFoundBody[] = "<!DOCTYPE html><html><head><title>404 - Not Found</title><body><h1>404 - Not Found</h1></body></html>\r\n";
+        res->setBody(notFoundBody);
+    }
+    else
+    {
+        /* If route was processed process response from registered middlewares */
+        for(auto it = m_middelwares.begin(); it != m_middelwares.end(); it++)
+        {
+            (*it)->processResponse(res);
+        }
+    }
+
+    res->send();
+    conn->close();
 }

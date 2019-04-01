@@ -6,6 +6,8 @@
 #define CPPWEBSERVER_WEBSERVER_HPP
 
 #include <list>
+#include <chrono>
+#include <thread>
 #include <socketwrapper/TCPSocket.hpp>
 
 #include "Request.hpp"
@@ -50,9 +52,15 @@ public:
     void addMiddleware(std::shared_ptr<Middleware> middleware);
 
     /**
-     * @brief starts the main loop of the webserver
+     * @brief starts the main loop of the webserver to handle incoming requests
      */
     void serve();
+
+    /**
+     * @brief handles a connection and returns an answer to the caller
+     * @param conn socket connection to the client
+     */
+    void handleConnection(std::shared_ptr<socketwrapper::TCPSocket> conn);
 
 private:
 
@@ -63,6 +71,5 @@ private:
     list<std::shared_ptr<Middleware>> m_middelwares; /// List with registered Middelwares
 
 };
-
 
 #endif //CPPWEBSERVER_WEBSERVER_HPP

@@ -2,7 +2,6 @@
 // Created by timog on 23.02.19.
 //
 
-#include <iostream>
 #include <fstream>
 #include <sstream>
 
@@ -47,7 +46,6 @@ void Response::send()
     /* Convert response to char* and send it to the client */
     char* res_arr = new char[response.length()+1];
     strcpy(res_arr, response.c_str());
-    std::cout << response << std::endl;
     m_conn->write(res_arr);
     delete[] res_arr;
 }
@@ -66,19 +64,19 @@ void Response::setBodyFromTemplate(string templateFile, map<string, boost::varia
     setBody(htmlTemplate);
 
     /* Substitue template file placeholders with the given values */
-    //TODO substitute template
     Jinja2CppLight::Template aTemplate(htmlTemplate);
 
     for(auto it = values.begin(); it != values.end(); it++)
     {
+        /* Substitute a string */
         try {
             aTemplate.setValue(it->first, boost::get<string>(it->second));
         } catch (const boost::bad_get&) {}
-
+        /* Substitute an int */
         try {
             aTemplate.setValue(it->first, boost::get<int>(it->second));
         } catch (const boost::bad_get&) {}
-
+        /* Substitute a list of strings */
         try {
             Jinja2CppLight::TupleValue tmp;
             for(auto ite = boost::get<list<string>>(it->second).begin(); ite != boost::get<list<string>>(it->second).end(); ite++)

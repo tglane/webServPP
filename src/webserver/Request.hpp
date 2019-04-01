@@ -88,5 +88,4 @@ private:
 
 };
 
-
 #endif //CPPWEBSERVER_REQUEST_HPP

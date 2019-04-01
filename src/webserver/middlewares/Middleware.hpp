@@ -15,8 +15,6 @@ class Middleware {
 
 public:
 
-    Middleware() = delete;
-
     /**
      * @brief Processes the given response in a specific way for each middelware
      * @param req

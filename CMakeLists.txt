@@ -9,6 +9,7 @@ set(SOURCES
         src/webserver/templating/stringhelper.cpp
         src/webserver/apps/App.cpp
         src/webserver/Webserver.cpp
+        src/webserver/middlewares/LoggingMiddleware.cpp
         src/webserver/Request.cpp
         src/webserver/Response.cpp
         src/webserver/Cookie.cpp
@@ -17,6 +18,8 @@ set(SOURCES
         src/webserver/apps/TestApp.cpp
    )
 
+find_package(Threads)
+
 find_library(SOCKETWRAPPER_LIB socketwrapper)
 find_path(SOCKETWRAPPER_INC socketwrapper)
 
@@ -24,3 +27,5 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_link_libraries(${PROJECT_NAME} ${SOCKETWRAPPER_LIB})
 target_include_directories(${PROJECT_NAME} PUBLIC ${SOCKETWRAPPER_INC})
+
+target_link_libraries(${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT})

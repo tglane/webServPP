@@ -37,6 +37,7 @@ public:
     /**
      * @brief Creates http response from member of the objects
      * Creates the response line, the header fields and the response body
+     * @return string representation of the response
      */
     void send();
 
