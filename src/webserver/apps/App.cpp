@@ -6,11 +6,24 @@
 
 void App::addRoute(string route, std::function<void()> handler)
 {
+    if(route.front() != '/')
+    {
+        route = '/' + route;
+    }
+    if(route.back() == '/')
+    {
+        route = route.substr(0, route.size() - 1);
+    }
     m_routes.emplace(route, handler);
 }
 
 bool App::getCallback(string route, Request::Ptr req, Response::Ptr res)
 {
+    if(route.back() == '/')
+    {
+        route = route.substr(0, route.size() - 1);
+    }
+
     auto it = m_routes.find(route);
     if(it != m_routes.end())
     {

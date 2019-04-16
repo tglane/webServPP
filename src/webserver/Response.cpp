@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <mutex>
 
 #include "templating/Jinja2CppLight.h"
 
@@ -50,9 +51,12 @@ void Response::send()
     delete[] res_arr;
 }
 
-void Response::setBodyFromTemplate(string templateFile, map<string, boost::variant<string, int, list<string>>> values)
+void Response::setBodyFromTemplate(const string templateFile, map<string, boost::variant<string, int, list<string>>> values)
 {
+    std::mutex mu;
+
     /* Open template file and read it into a string if found */
+    mu.lock();
     std::ifstream ifs("../src/templates/" + templateFile);
     if(!ifs.good())
     {
@@ -62,6 +66,7 @@ void Response::setBodyFromTemplate(string templateFile, map<string, boost::varia
     sstr << ifs.rdbuf();
     string htmlTemplate(sstr.str());
     setBody(htmlTemplate);
+    mu.unlock();
 
     /* Substitue template file placeholders with the given values */
     Jinja2CppLight::Template aTemplate(htmlTemplate);

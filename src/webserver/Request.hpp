@@ -35,16 +35,11 @@ public:
      */
     void parse(char* request);
 
-    /**
-     * @brief Checks wether the request object represents a valid http request
-     * Should be called after call parse() method
-     * @return
-     */
-    bool isValid();
-
     map<string, string> getHeaders() { return m_headers; }
 
     string getMethod() { return m_method; }
+
+    string getResource() { return m_resource; }
 
     string getProtocol() { return m_protocol; }
 
@@ -60,7 +55,7 @@ private:
      * Parses a http request line and stores the parameters in member variables
      * @param requestline String that contains a http request line
      */
-    void parse_requestline(string requestline);
+    void parse_requestline(string& requestline);
 
     /**
      * Parses the query string into map m_params

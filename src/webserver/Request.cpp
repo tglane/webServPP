@@ -5,6 +5,7 @@
 #include "Request.hpp"
 #include <iostream>
 
+//TODO secure parsing by checking for valid http requests
 void Request::parse(char* request)
 {
     m_request = string(request);
@@ -64,7 +65,7 @@ void Request::parse(char* request)
     delete[] request;
 }
 
-void Request::parse_requestline(string requestline)
+void Request::parse_requestline(string& requestline)
 {
     std::istringstream iss(requestline);
     std::vector<string> requestline_split((std::istream_iterator<string>(iss)),
@@ -123,24 +124,4 @@ void Request::parse_cookies(string cookies)
         Cookie c((*it).substr(0, pos), (*it).substr(pos + 1));
         m_cookies.insert(std::pair<string, Cookie>((*it).substr(0, pos), c));
     }
-}
-
-bool Request::isValid()
-{
-    if(m_method != "post" && m_method != "POST" && m_method != "get" && m_method != "GET" &&
-        m_method != "head" && m_method != "HEAD" && m_method != "put" && m_method != "PUT" &&
-        m_method != "delete" && m_method != "DELETE" && m_method != "trace" && m_method != "TRACE" &&
-        m_method != "patch" && m_method != "PATCH")
-    {
-        return false;
-    }
-    if(m_path.find("..") != string::npos)
-    {
-        return false;
-    }
-    if(m_protocol.find("HTTP/") == string::npos)
-    {
-        return false;
-    }
-    return true;
 }

@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 set(SOURCES
         src/webserver/util/Statuscodes.cpp
+        src/webserver/util/RequestChecker.cpp
         src/webserver/templating/Jinja2CppLight.cpp
         src/webserver/templating/stringhelper.cpp
         src/webserver/apps/App.cpp
