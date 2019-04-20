@@ -63,14 +63,18 @@ void Webserver::serve()
         std::shared_ptr<std::thread> t;
         try {
             if (m_enable_https) {
-                t = std::make_shared<std::thread>(&Webserver::handleConnection, this, m_secure_socket->accept());
-
+                //TODO FIX
+                //t = std::make_shared<std::thread>(&Webserver::handleHttps, this, m_secure_socket->accept());
+                //t->detach();
+                //m_threads.push_back(t);
+                handleConnection(m_secure_socket->accept());
             } else {
                 t = std::make_shared<std::thread>(&Webserver::handleConnection, this, m_socket->accept());
+                t->detach();
+                m_threads.push_back(t);
             }
 
-            t->detach();
-            m_threads.push_back(t);
+
         } catch(socketwrapper::SocketAcceptingException &ex) {
             std::cout << "Client connection not accepted" << std::endl;
         }
@@ -78,18 +82,21 @@ void Webserver::serve()
 }
 
 //TODO replace socket->read(bytes) with socket->readAll()
-void Webserver::handleConnection(std::shared_ptr<socketwrapper::TCPSocket> conn)
+void Webserver::handleConnection(socketwrapper::TCPSocket::Ptr conn)
 {
     /* wait until data is available */
     while(conn->bytes_available() == 0)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
+
+    std::cout << "---New Request---" << std::endl;
     Request::Ptr req = std::make_shared<Request>();
-    req->parse(conn->read(1024));
+    req->parse(conn->readAll());
 
     if(!reqCheck.checkRequest(*req))
     {
+        //TODO implement this in logging middleware
         std::cout << "Incoming Request not valid --- Connection refused" << std::endl;
         return;
     }

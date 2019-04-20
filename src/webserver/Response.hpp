@@ -32,7 +32,7 @@ public:
     using Ptr = std::shared_ptr<Response>;
 
     /// Constructor
-    Response(socketwrapper::TCPSocket::Ptr& conn, Request::Ptr &req) : m_conn(conn), m_req(req) {}
+    Response(socketwrapper::TCPSocket::Ptr conn, Request::Ptr &req) : m_conn(conn), m_req(req) {}
 
     /**
      * @brief Creates http response from member of the objects
