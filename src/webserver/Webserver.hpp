@@ -14,6 +14,7 @@
 #include "Request.hpp"
 #include "Response.hpp"
 #include "util/RequestChecker.hpp"
+#include "util/CryptoThreadSetup.hpp"
 #include "apps/App.hpp"
 #include "middlewares/Middleware.hpp"
 

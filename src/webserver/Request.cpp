@@ -9,7 +9,7 @@
 void Request::parse(char* request)
 {
     m_request = string(request);
-    std::cout << m_request << std::endl;
+    //std::cout << m_request << std::endl;
     //TODO: log the request using the logging middleware - to be implemented
 
     /* extract the request line */

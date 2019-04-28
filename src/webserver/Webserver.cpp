@@ -3,20 +3,20 @@
 //
 
 #include "Webserver.hpp"
-#include <socketwrapper/SSLTCPSocket.hpp>
+#include "pthread.h"
 
 //TODO implement redirecting option from http to https?
-//TODO catch SocketAcceptingException (for https)
 Webserver::Webserver(int port, int queue_size, bool enable_https)
     : reqCheck()
 {
     m_port = port;
     if(enable_https)
     {
+        //CryptoThreadSetup::init_locks();
         m_enable_https = true;
         m_secure_socket = std::make_shared<socketwrapper::SSLTCPSocket>(AF_INET, "/etc/ssl/certs/cert.pem", "/etc/ssl/private/key.pem");
         m_secure_socket->bind("0.0.0.0", m_port);
-        m_secure_socket->listen();
+        m_secure_socket->listen(queue_size);
     }
     else
     {
@@ -28,6 +28,7 @@ Webserver::Webserver(int port, int queue_size, bool enable_https)
 
 Webserver::~Webserver()
 {
+    //if(m_enable_https) { CryptoThreadSetup::kill_locks(); }
     m_socket->close();
 }
 
@@ -61,6 +62,7 @@ void Webserver::serve()
 
         /* Handle incoming requests within a new thread */
         std::shared_ptr<std::thread> t;
+        pthread_t https_thread;
         try {
             if (m_enable_https) {
                 //TODO FIX
