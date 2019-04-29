@@ -12,7 +12,6 @@ Webserver::Webserver(int port, int queue_size, bool enable_https)
     m_port = port;
     if(enable_https)
     {
-        //CryptoThreadSetup::init_locks();
         m_enable_https = true;
         m_secure_socket = std::make_shared<socketwrapper::SSLTCPSocket>(AF_INET, "/etc/ssl/certs/cert.pem", "/etc/ssl/private/key.pem");
         m_secure_socket->bind("0.0.0.0", m_port);
@@ -28,7 +27,6 @@ Webserver::Webserver(int port, int queue_size, bool enable_https)
 
 Webserver::~Webserver()
 {
-    //if(m_enable_https) { CryptoThreadSetup::kill_locks(); }
     m_socket->close();
 }
 
@@ -47,7 +45,7 @@ void Webserver::serve()
 {
     if(m_enable_https)
     {
-        std::cout << "Listening on https://localhost:" << m_port << " via encrypted https connection" << std::endl;
+        std::cout << "Listening on https://localhost:" << m_port << " via encrypted connection" << std::endl;
     }
     else
     {
@@ -62,18 +60,15 @@ void Webserver::serve()
 
         /* Handle incoming requests within a new thread */
         std::shared_ptr<std::thread> t;
-        pthread_t https_thread;
         try {
             if (m_enable_https) {
-                //TODO FIX
-                //t = std::make_shared<std::thread>(&Webserver::handleHttps, this, m_secure_socket->accept());
-                //t->detach();
+                t = std::make_shared<std::thread>(&Webserver::handleConnection, this, m_secure_socket->accept());
+                t->detach();
                 //m_threads.push_back(t);
-                handleConnection(m_secure_socket->accept());
             } else {
                 t = std::make_shared<std::thread>(&Webserver::handleConnection, this, m_socket->accept());
                 t->detach();
-                m_threads.push_back(t);
+                //m_threads.push_back(t);
             }
 
 
@@ -83,7 +78,6 @@ void Webserver::serve()
     }
 }
 
-//TODO replace socket->read(bytes) with socket->readAll()
 void Webserver::handleConnection(socketwrapper::TCPSocket::Ptr conn)
 {
     /* wait until data is available */
@@ -94,16 +88,20 @@ void Webserver::handleConnection(socketwrapper::TCPSocket::Ptr conn)
 
     std::cout << "---New Request---" << std::endl;
     Request::Ptr req = std::make_shared<Request>();
-    req->parse(conn->readAll());
+    char* request = conn->readAll();
+    req->parse(request);
+    Response::Ptr res = std::make_shared<Response>(conn, req);
 
     if(!reqCheck.checkRequest(*req))
     {
         //TODO implement this in logging middleware
-        std::cout << "Incoming Request not valid --- Connection refused" << std::endl;
+        res->setCode("400");
+        res->send();
+        std::cout << "400 --- Bad Request" << std::endl;
+        conn->close();
+        delete[] request;
         return;
     }
-
-    Response::Ptr res = std::make_shared<Response>(conn, req);
 
     /* Process request from all registered middlewares */
     for(auto it = m_middlewares.begin(); it != m_middlewares.end(); it++)
@@ -111,11 +109,20 @@ void Webserver::handleConnection(socketwrapper::TCPSocket::Ptr conn)
         (*it)->processRequest(req, res);
     }
 
-    /* Try to process the called route from a registered app */
+    /* Try to process the called route from a registered app or javascript file */
     bool processed = false;
-    for(auto it = m_apps.begin(); it != m_apps.end(); it++)
+    string path = req->getPath();
+
+    if(path.compare(path.size() - 3, 3, ".js") == 0)
     {
-        if((*it)->getCallback(req->getPath(), req, res))
+        res->setBodyFromFile(path);
+
+        processed = true;
+    }
+
+    for(auto it = m_apps.begin(); it != m_apps.end() && !processed; it++)
+    {
+        if((*it)->getCallback(path, req, res))
         {
             processed = true;
         }
@@ -138,4 +145,5 @@ void Webserver::handleConnection(socketwrapper::TCPSocket::Ptr conn)
 
     res->send();
     conn->close();
+    delete[] request;
 }

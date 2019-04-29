@@ -28,5 +28,5 @@ void TestApp::showTemplate()
 {
     list<string> l{"Hallo", "dies", "ist", "ein", "Test", "der", "Template-Enginge", "!"};
 
-    m_res->setBodyFromTemplate("test.tmpl.html", map<string, boost::variant<string, int, list<string>>>{{"headline", "Ja moin"}, {"text", "löl hier ist ja jz doch was xD"}, {"its", l}, {"it", 4}});
+    m_res->setBodyFromTemplate("test.tmpl.html", map<string, std::variant<string, int, list<string>>>{{"headline", "Ja moin"}, {"text", "löl hier ist ja jz doch was xD"}, {"its", l}, {"it", 4}});
 }

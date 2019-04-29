@@ -10,7 +10,7 @@
 #include <map>
 #include <memory>
 #include <list>
-#include <boost/variant.hpp>
+#include <variant>
 
 #include "Cookie.hpp"
 #include "Request.hpp"
@@ -32,7 +32,7 @@ public:
     using Ptr = std::shared_ptr<Response>;
 
     /// Constructor
-    Response(socketwrapper::TCPSocket::Ptr conn, Request::Ptr &req) : m_conn(conn), m_req(req) {}
+    Response(socketwrapper::TCPSocket::Ptr conn, Request::Ptr &req) : m_conn(std::move(conn)), m_req(req) {}
 
     /**
      * @brief Creates http response from member of the objects
@@ -47,20 +47,26 @@ public:
      * @param values map containing strings as placeholders in the template to replace with strings or lists of strings
      *          from this map
      */
-    void setBodyFromTemplate(const string templateFile, map<string, boost::variant<string, int, list<string>>> values);
+    void setBodyFromTemplate(const string& templateFile, map<string, std::variant<string, int, list<string>>> values);
+
+    /**
+     * @brief Reads a file from given filename and uses it as the response body
+     * @param bodyFile filename
+     */
+    void setBodyFromFile(const string& bodyFile);
 
     /**
      * @brief Adds header Location: url, sets status to 302 and calls method send() to send a redirect to url
      * @param url to redirect to
      */
-    void sendRedirect(string url);
+    void sendRedirect(const string& url);
 
     /**
      * Adds a header to m_headers with key: value for the response
      * @param key
      * @param value
      */
-    void addHeader(string key, string value);
+    void addHeader(const string& key, const string& value);
 
     /**
      * Adds a cookie to m_cookies with name: cookie
@@ -71,11 +77,13 @@ public:
     /**
      * Sets the header field Content-Type to the given string
      */
-    void setContentType(string contentType);
+    void setContentType(const string& contentType);
 
-    void setCode(string code) { m_code = code; }
+    void setCode(string code) { m_code = std::move(code); }
 
-    void setBody(string body) { m_body = body; }
+    void setBody(string body) { m_body = std::move(body); }
+
+    string getCode() { return m_code; }
 
 private:
 
@@ -84,7 +92,7 @@ private:
      * @param code http status code
      * @return http status code phrase
      */
-    string getPhrase(string code);
+    string getPhrase(const string& code);
 
     socketwrapper::TCPSocket::Ptr m_conn;   /// Socket connected to the client
     Request::Ptr m_req;                     /// Request from the client to answer with this response

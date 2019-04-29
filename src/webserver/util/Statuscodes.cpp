@@ -78,7 +78,7 @@ map<int, string> Statuscodes::c_codes = {
         {510, "Not Extended"}
 };
 
-string Statuscodes::getPhrase(string code)
+string Statuscodes::getPhrase(const string& code)
 {
     auto it = c_codes.find(std::stoi(code));
     if(it != c_codes.end())

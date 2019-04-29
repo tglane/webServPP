@@ -51,16 +51,21 @@ void Response::send()
     delete[] res_arr;
 }
 
-void Response::setBodyFromTemplate(const string templateFile, map<string, boost::variant<string, int, list<string>>> values)
+void Response::setBodyFromTemplate(const string& templateFile, map<string, std::variant<string, int, list<string>>> values)
 {
     std::mutex mu;
 
     /* Open template file and read it into a string if found */
     mu.lock();
+    if(templateFile.rfind("..") != string::npos)
+    {
+        throw "Detected not allowed characters in path!";
+    }
+    //TODO make template path independent from start folder
     std::ifstream ifs("../src/templates/" + templateFile);
     if(!ifs.good())
     {
-        throw "No template in src/templates/ found.";
+        throw "No template in found src/templates/.";
     }
     std::stringstream sstr;
     sstr << ifs.rdbuf();
@@ -75,34 +80,57 @@ void Response::setBodyFromTemplate(const string templateFile, map<string, boost:
     {
         /* Substitute a string */
         try {
-            aTemplate.setValue(it->first, boost::get<string>(it->second));
-        } catch (const boost::bad_get&) {}
+            aTemplate.setValue(it->first, std::get<string>(it->second));
+        } catch (const std::bad_variant_access&) {}
         /* Substitute an int */
         try {
-            aTemplate.setValue(it->first, boost::get<int>(it->second));
-        } catch (const boost::bad_get&) {}
+            aTemplate.setValue(it->first, std::get<int>(it->second));
+        } catch (const std::bad_variant_access&) {}
         /* Substitute a list of strings */
         try {
             Jinja2CppLight::TupleValue tmp;
-            for(auto ite = boost::get<list<string>>(it->second).begin(); ite != boost::get<list<string>>(it->second).end(); ite++)
+            for(auto ite = std::get<list<string>>(it->second).begin(); ite != std::get<list<string>>(it->second).end(); ite++)
             {
                 tmp.addValue(*ite);
             }
             aTemplate.setValue(it->first, tmp);
-        } catch (const boost::bad_get&) {}
+        } catch (const std::bad_variant_access&) {}
     }
 
     setBody(aTemplate.render());
 }
 
-void Response::sendRedirect(string url)
+void Response::setBodyFromFile(const string &bodyFile)
 {
-    addHeader("Location", std::move(url));
+    std::mutex mu;
+
+    /* Open template file and read it into a string if found */
+    mu.lock();
+    if(bodyFile.rfind("..") != string::npos)
+    {
+        throw "Detected not allowed characters in path!";
+    }
+    //TODO make body path independent from start folder
+    std::ifstream ifs("../src/" + bodyFile);
+    if(!ifs.good())
+    {
+        throw "No body file found in src/static/.";
+    }
+    std::stringstream sstr;
+    sstr << ifs.rdbuf();
+    string htmlBody(sstr.str());
+    setBody(htmlBody);
+    mu.unlock();
+}
+
+void Response::sendRedirect(const string& url)
+{
+    addHeader("Location", url);
     setCode("302");
     send();
 }
 
-void Response::addHeader(string key, string value)
+void Response::addHeader(const string& key, const string& value)
 {
     auto it = m_headers.find(key);
     if(it != m_headers.end())
@@ -124,7 +152,7 @@ void Response::addCookie(Cookie cookie)
     }
 }
 
-void Response::setContentType(string contentType)
+void Response::setContentType(const string& contentType)
 {
     auto it = m_headers.find("Content-Type");
     if(it != m_headers.end())
@@ -137,9 +165,9 @@ void Response::setContentType(string contentType)
     }
 }
 
-string Response::getPhrase(string code)
+string Response::getPhrase(const string& code)
 {
-    string codephrase = Statuscodes::getPhrase(std::move(code));
+    string codephrase = Statuscodes::getPhrase(code);
     if(codephrase.empty())
     {
         setCode("500");
