@@ -26,7 +26,7 @@ bool RequestChecker::checkRequestline(const string &method, const string &resour
     {
         return false;
     }
-    if(protocol.find("HTTP/") == string::npos && protocol.find("http/") == string::npos)
+    if(!std::regex_match(protocol, std::regex("(HTTP/[0-9].[0-9])|(http/[0-9][.][0-9])")))
     {
         return false;
     }

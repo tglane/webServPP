@@ -5,6 +5,7 @@
 #ifndef CPPWEBSERVER_REQUESTCHECKER_HPP
 #define CPPWEBSERVER_REQUESTCHECKER_HPP
 
+#include <regex>
 #include "../Request.hpp"
 
 /**

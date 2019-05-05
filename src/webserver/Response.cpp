@@ -10,7 +10,7 @@
 
 #include "Response.hpp"
 
-void Response::send()
+string Response::createString()
 {
     string response;
 
@@ -44,11 +44,7 @@ void Response::send()
     response.append("\r\n");
     response.append(m_body);
 
-    /* Convert response to char* and send it to the client */
-    char* res_arr = new char[response.length()+1];
-    strcpy(res_arr, response.c_str());
-    m_conn->write(res_arr);
-    delete[] res_arr;
+    return response;
 }
 
 void Response::setBodyFromTemplate(const string& templateFile, map<string, std::variant<string, int, list<string>>> values)
@@ -70,7 +66,6 @@ void Response::setBodyFromTemplate(const string& templateFile, map<string, std::
     std::stringstream sstr;
     sstr << ifs.rdbuf();
     string htmlTemplate(sstr.str());
-    setBody(htmlTemplate);
     mu.unlock();
 
     /* Substitue template file placeholders with the given values */
@@ -123,11 +118,17 @@ void Response::setBodyFromFile(const string &bodyFile)
     mu.unlock();
 }
 
+void Response::setBody(const string& body)
+{
+    m_body = body;
+    addHeader("Content-Length", std::to_string(m_body.size()));
+}
+
 void Response::sendRedirect(const string& url)
 {
     addHeader("Location", url);
     setCode("302");
-    send();
+    createString();
 }
 
 void Response::addHeader(const string& key, const string& value)

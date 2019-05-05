@@ -34,11 +34,9 @@ void Request::parse(char* request)
     string headerline;
     while(getline(f, headerline) && headerline != "\r")
     {
-        //std::cout << headerline << std::endl
         size_t pos = headerline.find(':');
         if(pos != string::npos) {
-            m_headers.insert(std::pair<string, string>(headerline.substr(0, pos),
-                             headerline.substr(pos + 2)));
+            m_headers.insert(std::pair<string, string>(headerline.substr(0, pos), headerline.substr(pos+2)));
         }
     }
 

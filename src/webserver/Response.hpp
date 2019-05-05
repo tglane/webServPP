@@ -32,14 +32,14 @@ public:
     using Ptr = std::shared_ptr<Response>;
 
     /// Constructor
-    Response(socketwrapper::TCPSocket::Ptr conn, Request::Ptr &req) : m_conn(std::move(conn)), m_req(req) {}
+    Response(Request::Ptr &req) : m_req(req) {}
 
     /**
      * @brief Creates http response from member of the objects
      * Creates the response line, the header fields and the response body
      * @return string representation of the response
      */
-    void send();
+    string createString();
 
     /**
      * @brief Reads a template file and substitutes its placeholders to build the http body and sets m_body
@@ -81,7 +81,7 @@ public:
 
     void setCode(string code) { m_code = std::move(code); }
 
-    void setBody(string body) { m_body = std::move(body); }
+    void setBody(const string& body);
 
     string getCode() { return m_code; }
 
@@ -94,7 +94,6 @@ private:
      */
     string getPhrase(const string& code);
 
-    socketwrapper::TCPSocket::Ptr m_conn;   /// Socket connected to the client
     Request::Ptr m_req;                     /// Request from the client to answer with this response
 
     string m_code;

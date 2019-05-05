@@ -14,7 +14,7 @@ void TestApp::registerRoutes()
 
 void TestApp::show()
 {
-    char body[] = "<!DOCTYPE html><html><head><title>Bye-bye baby bye-bye</title><body><h1>Goodbye, world!</h1><form id=\"main_form\" method=\"post\"><textarea>Hallo</textarea id=\"id_text\"><input type=\"submit\"></form></body></html>\r\n";
+    char body[] = "<!DOCTYPE html><html><head><title>Bye-bye baby bye-bye</title></head><body><h1 id=\"headline\">Goodbye, world!</h1><form id=\"main_form\" method=\"post\"><textarea>Hallo</textarea id=\"id_text\"><input type=\"submit\"></form></body></html>\r\n";
 
     m_res->setBody(body);
 }

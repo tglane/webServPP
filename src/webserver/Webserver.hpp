@@ -64,7 +64,9 @@ private:
      * @brief handles a connection and returns an answer to the caller
      * @param conn socket connection to the client
      */
-    void handleConnection(std::shared_ptr<socketwrapper::TCPSocket> conn);
+    void handleConnection(const socketwrapper::TCPSocket::Ptr& conn);
+
+    void sendResponse(const socketwrapper::TCPSocket::Ptr& conn, const string& response);
 
     int m_port;
     bool m_enable_https = false;

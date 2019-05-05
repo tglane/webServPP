@@ -3,7 +3,6 @@
 //
 
 #include "Webserver.hpp"
-#include "pthread.h"
 
 //TODO implement redirecting option from http to https?
 Webserver::Webserver(int port, int queue_size, bool enable_https)
@@ -62,7 +61,7 @@ void Webserver::serve()
         std::shared_ptr<std::thread> t;
         try {
             if (m_enable_https) {
-                t = std::make_shared<std::thread>(&Webserver::handleConnection, this, m_secure_socket->accept());
+                t = std::make_shared<std::thread>(&Webserver::handleConnection, this, std::move(m_secure_socket->accept()));
                 t->detach();
                 //m_threads.push_back(t);
             } else {
@@ -78,7 +77,7 @@ void Webserver::serve()
     }
 }
 
-void Webserver::handleConnection(socketwrapper::TCPSocket::Ptr conn)
+void Webserver::handleConnection(const socketwrapper::TCPSocket::Ptr& conn)
 {
     /* wait until data is available */
     while(conn->bytes_available() == 0)
@@ -90,13 +89,14 @@ void Webserver::handleConnection(socketwrapper::TCPSocket::Ptr conn)
     Request::Ptr req = std::make_shared<Request>();
     char* request = conn->readAll();
     req->parse(request);
-    Response::Ptr res = std::make_shared<Response>(conn, req);
+    Response::Ptr res = std::make_shared<Response>(req);
 
     if(!reqCheck.checkRequest(*req))
     {
         //TODO implement this in logging middleware
         res->setCode("400");
-        res->send();
+        res->addHeader("Connection", "close");
+        res->createString();
         std::cout << "400 --- Bad Request" << std::endl;
         conn->close();
         delete[] request;
@@ -109,11 +109,11 @@ void Webserver::handleConnection(socketwrapper::TCPSocket::Ptr conn)
         (*it)->processRequest(req, res);
     }
 
-    /* Try to process the called route from a registered app or javascript file */
+    /* Try to process the called route from a registered app, css file or javascript file */
     bool processed = false;
     string path = req->getPath();
 
-    if(path.compare(path.size() - 3, 3, ".js") == 0)
+    if((path.compare(path.size() - 3, 3, ".js") == 0) || (path.compare(path.size() - 4, 4, ".css") == 0))
     {
         res->setBodyFromFile(path);
 
@@ -143,7 +143,34 @@ void Webserver::handleConnection(socketwrapper::TCPSocket::Ptr conn)
         }
     }
 
-    res->send();
-    conn->close();
-    delete[] request;
+    bool sent = false;
+    try {
+        string connection_type = req->getHeaders().at("Connection");
+        if(connection_type.find("keep-alive") != string::npos)
+        {
+            res->addHeader("Connection", "keep-alive");
+            string response = res->createString();
+            sendResponse(conn, res->createString());
+            delete[] request;
+            handleConnection(conn);
+            conn->close();
+            sent = true;
+        }
+    } catch(std::out_of_range& e) {}
+    if(!sent)
+    {
+        res->addHeader("Connection", "close");
+        string response = res->createString();
+        sendResponse(conn, res->createString());
+        delete[] request;
+        conn->close();
+    }
+}
+
+void Webserver::sendResponse(const socketwrapper::TCPSocket::Ptr &conn, const string& response)
+{
+    char* res_arr = new char[response.length()+1];
+    strcpy(res_arr, response.c_str());
+    conn->write(res_arr);
+    delete[] res_arr;
 }
