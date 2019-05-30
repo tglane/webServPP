@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5.1)
 
-project(cppwebserver)
+project(webServ-pp)
 set(CMAKE_CXX_STANDARD 17)
 
 set(SOURCES
@@ -10,10 +10,12 @@ set(SOURCES
         src/webserver/templating/stringhelper.cpp
         src/webserver/apps/App.cpp
         src/webserver/Webserver.cpp
+        src/webserver/middlewares/SessionMiddleware.cpp
         src/webserver/middlewares/LoggingMiddleware.cpp
         src/webserver/Request.cpp
         src/webserver/Response.cpp
         src/webserver/Cookie.cpp
+        src/webserver/Session.cpp
         src/main.cpp
 
         src/webserver/apps/TestApp.cpp

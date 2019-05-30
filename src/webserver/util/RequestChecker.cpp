@@ -7,7 +7,8 @@
 //TODO add more checks
 bool RequestChecker::checkRequest(Request &req)
 {
-    if(!checkRequestline(req.getMethod(), req.getResource(), req.getProtocol())) return false;
+    if(!checkRequestline(req.getMethod(), req.getResource(), req.getProtocol())) { return false; }
+    if(!checkHost(req)) { return false; }
 
     return true;
 }
@@ -31,4 +32,14 @@ bool RequestChecker::checkRequestline(const string &method, const string &resour
         return false;
     }
     return true;
+}
+
+bool RequestChecker::checkHost(Request &req)
+{
+    try {
+        req.getHeaders().at("Host");
+        return true;
+    } catch(std::out_of_range& e) {
+        return false;
+    }
 }

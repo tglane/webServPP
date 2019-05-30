@@ -4,11 +4,12 @@
 
 #include <fstream>
 #include <sstream>
-#include <mutex>
 
 #include "templating/Jinja2CppLight.h"
 
 #include "Response.hpp"
+
+std::mutex Response::mu;
 
 string Response::createString()
 {
@@ -42,26 +43,29 @@ string Response::createString()
 
     /* Append body to response line */
     response.append("\r\n");
-    response.append(m_body);
+    if(!m_body.empty())
+    {
+        response.append(m_body);
+    }
 
     return response;
 }
 
 void Response::setBodyFromTemplate(const string& templateFile, map<string, std::variant<string, int, list<string>>> values)
 {
-    std::mutex mu;
-
     /* Open template file and read it into a string if found */
     mu.lock();
     if(templateFile.rfind("..") != string::npos)
     {
-        throw "Detected not allowed characters in path!";
+        mu.unlock();
+        throw std::invalid_argument("Detected not allowed characters in path!\n");
     }
-    //TODO make template path independent from start folder
+    //TODO use only the filename and search only in allowed folders for the filename
     std::ifstream ifs("../src/templates/" + templateFile);
     if(!ifs.good())
     {
-        throw "No template in found src/templates/.";
+        mu.unlock();
+        throw std::invalid_argument("Requested file not found.\n");
     }
     std::stringstream sstr;
     sstr << ifs.rdbuf();
@@ -97,25 +101,25 @@ void Response::setBodyFromTemplate(const string& templateFile, map<string, std::
 
 void Response::setBodyFromFile(const string &bodyFile)
 {
-    std::mutex mu;
-
     /* Open template file and read it into a string if found */
     mu.lock();
     if(bodyFile.rfind("..") != string::npos)
     {
-        throw "Detected not allowed characters in path!";
+        mu.unlock();
+        throw std::invalid_argument("Path contains not allowed characters!\n");
     }
-    //TODO make body path independent from start folder
-    std::ifstream ifs("../src/" + bodyFile);
+    //TODO use only the filename and search only in allowed folders for the filename
+    std::ifstream ifs("../src" + bodyFile);
     if(!ifs.good())
     {
-        throw "No body file found in src/static/.";
+        mu.unlock();
+        throw std::invalid_argument("Requested file not found.\n");
     }
     std::stringstream sstr;
     sstr << ifs.rdbuf();
     string htmlBody(sstr.str());
-    setBody(htmlBody);
     mu.unlock();
+    setBody(htmlBody);
 }
 
 void Response::setBody(const string& body)

@@ -10,13 +10,12 @@ void TestApp::registerRoutes()
     addRoute("/test/normal", std::bind(&TestApp::show, this));
     addRoute("/test/redirect", std::bind(&TestApp::showRedirect, this));
     addRoute("/test", std::bind(&TestApp::showTemplate, this));
+    addRoute("/test/ajax", std::bind(&TestApp::ajaxTest, this));
 }
 
 void TestApp::show()
 {
-    char body[] = "<!DOCTYPE html><html><head><title>Bye-bye baby bye-bye</title></head><body><h1 id=\"headline\">Goodbye, world!</h1><form id=\"main_form\" method=\"post\"><textarea>Hallo</textarea id=\"id_text\"><input type=\"submit\"></form></body></html>\r\n";
-
-    m_res->setBody(body);
+    m_res->setBodyFromFile("/templates/test.html");
 }
 
 void TestApp::showRedirect()
@@ -29,4 +28,11 @@ void TestApp::showTemplate()
     list<string> l{"Hallo", "dies", "ist", "ein", "Test", "der", "Template-Enginge", "!"};
 
     m_res->setBodyFromTemplate("test.tmpl.html", map<string, std::variant<string, int, list<string>>>{{"headline", "Ja moin"}, {"text", "löl hier ist ja jz doch was xD"}, {"its", l}, {"it", 4}});
+}
+
+void TestApp::ajaxTest()
+{
+    if(m_req->getMethod() == "POST") {
+        m_res->setBody("<div id=\"messages\"><div>" + m_req->getParams().at("new_text") + "</div><br>" + m_req->getParams().at("old_text") + "</div>");
+    }
 }

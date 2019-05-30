@@ -8,6 +8,7 @@
 #include <list>
 #include <chrono>
 #include <thread>
+#include <regex>
 #include <socketwrapper/TCPSocket.hpp>
 #include <socketwrapper/SSLTCPSocket.hpp>
 
@@ -44,14 +45,14 @@ public:
      * Adds a given app shared_ptr to m_apps and registers the routes of the app
      * @param app
      */
-    void addApp(std::shared_ptr<App> app);
+    void addApp(const std::shared_ptr<App>& app);
 
     /**
      * Adds a given middelware to m_middelwares to call processRequest() and processResponse()
      *  in the main loop
      * @param middleware
      */
-    void addMiddleware(std::shared_ptr<Middleware> middleware);
+    void addMiddleware(const std::shared_ptr<Middleware>& middleware);
 
     /**
      * @brief starts the main loop of the webserver to handle incoming requests

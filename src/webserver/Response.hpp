@@ -11,6 +11,8 @@
 #include <memory>
 #include <list>
 #include <variant>
+#include <exception>
+#include <mutex>
 
 #include "Cookie.hpp"
 #include "Request.hpp"
@@ -101,6 +103,8 @@ private:
 
     map<string, string> m_headers;
     map<string, Cookie> m_cookies;
+
+    static std::mutex mu;
 
 };
 

@@ -1,0 +1,10 @@
+#headline {
+    background-color: blue;
+    color: darkred;
+    border: 1px solid fuchsia;
+}
+
+.header {
+    color: darkcyan;
+    background: yellow;
+}

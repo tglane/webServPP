@@ -26,7 +26,7 @@ public:
 
     /// Constructor
     Cookie(string name, string value, bool httpOnly = false, bool secure = false, string comment = "",
-        string domain = "", string max_age = "",string path = "", int expires = 0);
+        string domain = "", string max_age = "",string path = "/", int expires = 0);
 
     /**
      * Creates a string representation of the member fields to set this cookie
@@ -41,6 +41,8 @@ public:
     void setSecure(bool value) { m_secure = value; }
 
     string getName() { return m_name; }
+
+    string getValue() { return m_value; }
 
 private:
 

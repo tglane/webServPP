@@ -4,7 +4,6 @@
 
 #include "Webserver.hpp"
 
-//TODO implement redirecting option from http to https?
 Webserver::Webserver(int port, int queue_size, bool enable_https)
     : reqCheck()
 {
@@ -29,13 +28,13 @@ Webserver::~Webserver()
     m_socket->close();
 }
 
-void Webserver::addApp(const std::shared_ptr<App> app)
+void Webserver::addApp(const std::shared_ptr<App>& app)
 {
     app->registerRoutes();
     m_apps.push_back(app);
 }
 
-void Webserver::addMiddleware(const std::shared_ptr<Middleware> middleware)
+void Webserver::addMiddleware(const std::shared_ptr<Middleware>& middleware)
 {
     m_middlewares.push_back(middleware);
 }
@@ -53,7 +52,6 @@ void Webserver::serve()
 
     while(1)
     {
-        //TODO set a special response if there are no registered apps
         //TODO limit thread creation?
         //TODO allow use of http and https socket at the same time?
 
@@ -72,7 +70,7 @@ void Webserver::serve()
 
 
         } catch(socketwrapper::SocketAcceptingException &ex) {
-            std::cout << "Client connection not accepted" << std::endl;
+            std::cout << ex.what() << std::endl;
         }
     }
 }
@@ -113,10 +111,11 @@ void Webserver::handleConnection(const socketwrapper::TCPSocket::Ptr& conn)
     bool processed = false;
     string path = req->getPath();
 
-    if((path.compare(path.size() - 3, 3, ".js") == 0) || (path.compare(path.size() - 4, 4, ".css") == 0))
+    if(std::regex_match(path, std::regex("(.*\\.(js|css|ico|img|jpg|png))")))
     {
-        res->setBodyFromFile(path);
-
+        try {
+            res->setBodyFromFile(path);
+        } catch(std::invalid_argument& e) { std::cout << e.what() << std::endl; }
         processed = true;
     }
 

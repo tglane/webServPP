@@ -27,6 +27,8 @@ private:
 
     bool checkRequestline(const string& method, const string& resource, const string& protocol);
 
+    bool checkHost(Request& req);
+
 };
 
 

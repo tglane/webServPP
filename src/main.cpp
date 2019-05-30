@@ -10,6 +10,7 @@
 
 /* Include middleware headers */
 #include "webserver/middlewares/LoggingMiddleware.hpp"
+#include "webserver/middlewares/SessionMiddleware.hpp"
 
 /* Include app headers */
 #include "webserver/apps/TestApp.hpp"
@@ -46,7 +47,8 @@ int main(int argc, char** argv)
     w.addApp(std::make_shared<TestApp>());
 
     /* Create middleware and add it to the server using w.addMiddleware(shared_ptr<middleware_name> name) */
-    w.addMiddleware(std::make_shared<LoggingMiddleware>());
+    //w.addMiddleware(std::make_shared<LoggingMiddleware>());
+    w.addMiddleware(std::make_shared<SessionMiddleware>());
 
     w.serve();
 

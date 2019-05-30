@@ -17,6 +17,8 @@ class TestApp : public App {
 
     void showTemplate();
 
+    void ajaxTest();
+
 };
 
 
