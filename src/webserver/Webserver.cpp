@@ -57,15 +57,15 @@ void Webserver::serve()
         std::thread t;
         try {
             if (m_enable_https) {
-                this->handle_connection(std::move(m_secure_socket.accept()));
+                //this->handle_connection(std::move(m_secure_socket.accept()));
 
-                /*t = std::thread(&Webserver::handle_connection, this, m_secure_socket.accept().get());
-                t.detach();*/
+                t = std::thread(&Webserver::handle_connection, this, std::move(m_secure_socket.accept()));
+                t.detach();
             } else {
-                this->handle_connection(std::move(m_socket.accept()));
+                //this->handle_connection(std::move(m_socket.accept()));
 
-                /*t = std::thread(&Webserver::handle_connection, this, m_socket.accept().get());
-                t.detach();*/
+                t = std::thread(&Webserver::handle_connection, this, std::move(m_socket.accept()));
+                t.detach();
             }
         } catch(socketwrapper::SocketAcceptingException& ex) {
             std::cout << ex.what() << std::endl;
