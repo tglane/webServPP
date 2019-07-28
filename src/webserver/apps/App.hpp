@@ -40,7 +40,7 @@ public:
      * @param route
      * @return true if a route was found, false else
      */
-    bool getCallback(string route, Request::Ptr req, Response::Ptr res);
+    bool getCallback(string route, Request& req, Response& res);
 
 protected:
 
@@ -49,12 +49,9 @@ protected:
      * @param route string representing the http route
      * @param handler callback method for the route -> must be implemented by the app!
      */
-    void addRoute(string route, std::function<void()>);
+    void addRoute(string route, std::function<void(Request&, Response&)>);
 
-    Request::Ptr m_req;     /// Request to the actual call
-    Response::Ptr m_res;    /// Response to the the actual call
-
-    map<string, std::function<void()>> m_routes; /// key = route path; value = handler function
+    map<string, std::function<void(Request&, Response&)>> m_routes; /// key = route path; value = handler function
 
 };
 

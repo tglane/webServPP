@@ -30,18 +30,16 @@ using std::list;
 class Response {
 
 public:
-
-    using Ptr = std::shared_ptr<Response>;
-
     /// Constructor
-    Response(Request::Ptr &req) : m_req(req) {}
+    explicit Response(std::shared_ptr<Request> req) : m_req {std::move(req)}
+    {}
 
     /**
      * @brief Creates http response from member of the objects
      * Creates the response line, the header fields and the response body
      * @return string representation of the response
      */
-    string createString();
+    string create_string();
 
     /**
      * @brief Reads a template file and substitutes its placeholders to build the http body and sets m_body
@@ -49,43 +47,43 @@ public:
      * @param values map containing strings as placeholders in the template to replace with strings or lists of strings
      *          from this map
      */
-    void setBodyFromTemplate(const string& templateFile, map<string, std::variant<string, int, list<string>>> values);
+    void set_body_from_template(const string& templateFile, const map<string, std::variant<string, int, list<string>>>& values);
 
     /**
      * @brief Reads a file from given filename and uses it as the response body
      * @param bodyFile filename
      */
-    void setBodyFromFile(const string& bodyFile);
+    void set_body_from_file(const string& bodyFile);
 
     /**
      * @brief Adds header Location: url, sets status to 302 and calls method send() to send a redirect to url
      * @param url to redirect to
      */
-    void sendRedirect(const string& url);
+    void send_redirect(const string& url);
 
     /**
      * Adds a header to m_headers with key: value for the response
      * @param key
      * @param value
      */
-    void addHeader(const string& key, const string& value);
+    void add_header(const string& key, const string& value);
 
     /**
      * Adds a cookie to m_cookies with name: cookie
      * @param cookie
      */
-    void addCookie(Cookie cookie);
+    void add_cookie(Cookie cookie);
 
     /**
      * Sets the header field Content-Type to the given string
      */
-    void setContentType(const string& contentType);
+    void set_content_type(const string& contentType);
 
-    void setCode(string code) { m_code = std::move(code); }
+    void set_code(string code) { m_code = std::move(code); }
 
-    void setBody(const string& body);
+    void set_body(const string& body);
 
-    string getCode() { return m_code; }
+    string get_code() { return m_code; }
 
 private:
 
@@ -94,9 +92,9 @@ private:
      * @param code http status code
      * @return http status code phrase
      */
-    string getPhrase(const string& code);
+    string get_phrase(const string& code);
 
-    Request::Ptr m_req;                     /// Request from the client to answer with this response
+    std::shared_ptr<Request> m_req;                     /// Request from the client to answer with this response
 
     string m_code;
     string m_body;
@@ -104,7 +102,7 @@ private:
     map<string, string> m_headers;
     map<string, Cookie> m_cookies;
 
-    static std::mutex mu;
+    static std::mutex c_file_mutex;
 
 };
 

@@ -22,8 +22,6 @@ class Cookie {
 
 public:
 
-    using Ptr = std::shared_ptr<Cookie>;
-
     /// Constructor
     Cookie(string name, string value, bool httpOnly = false, bool secure = false, string comment = "",
         string domain = "", string max_age = "",string path = "/", int expires = 0);

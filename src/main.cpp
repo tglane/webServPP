@@ -43,12 +43,12 @@ int main(int argc, char** argv)
 
     Webserver w(port, 5, enable_https);
 
-    /* Create apps and add it to the server using w.addApp(shared_ptr<app_name> name) */
-    w.addApp(std::make_shared<TestApp>());
+    /* Create apps and add it to the server using w.add_app(shared_ptr<app_name> name) */
+    w.add_app(std::make_unique<TestApp>());
 
-    /* Create middleware and add it to the server using w.addMiddleware(shared_ptr<middleware_name> name) */
-    //w.addMiddleware(std::make_shared<LoggingMiddleware>());
-    w.addMiddleware(std::make_shared<SessionMiddleware>());
+    /* Create middleware and add it to the server using w.add_middleware(shared_ptr<middleware_name> name) */
+    //w.add_middleware(std::make_shared<LoggingMiddleware>());
+    w.add_middleware(std::make_unique<SessionMiddleware>());
 
     w.serve();
 

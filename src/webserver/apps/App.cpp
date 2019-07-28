@@ -4,7 +4,7 @@
 
 #include "App.hpp"
 
-void App::addRoute(string route, std::function<void()> handler)
+void App::addRoute(string route, std::function<void(Request& req, Response& res)> handler)
 {
     if(route.front() != '/')
     {
@@ -17,19 +17,17 @@ void App::addRoute(string route, std::function<void()> handler)
     m_routes.emplace(route, handler);
 }
 
-bool App::getCallback(string route, Request::Ptr req, Response::Ptr res)
+bool App::getCallback(string route, Request& req, Response& res)
 {
     if(route.back() == '/')
     {
         route = route.substr(0, route.size() - 1);
     }
 
-    auto it = m_routes.find(route);
+    const auto& it = m_routes.find(route);
     if(it != m_routes.end())
     {
-        m_req = std::move(req);
-        m_res = std::move(res);
-        (it->second)();
+        (it->second)(req, res);
         return true;
     }
     else return false;

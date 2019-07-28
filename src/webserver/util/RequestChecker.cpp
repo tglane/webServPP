@@ -5,16 +5,16 @@
 #include "RequestChecker.hpp"
 
 //TODO add more checks
-bool RequestChecker::checkRequest(Request &req)
+bool RequestChecker::checkRequest(Request& req)
 {
-    if(!checkRequestline(req.getMethod(), req.getResource(), req.getProtocol())) { return false; }
-    if(!checkHost(req)) { return false; }
+    if(!checkRequestline(req.get_method(), req.get_resource(), req.get_protocol())) { return false; }
+    //if(!checkHost(req)) { return false; }
 
     return true;
 }
 
 //TODO improve requestline check
-bool RequestChecker::checkRequestline(const string &method, const string &resource, const string &protocol)
+bool RequestChecker::checkRequestline(const string& method, const string& resource, const string& protocol)
 {
     if(method != "post" && method != "POST" && method != "get" && method != "GET" &&
        method != "head" && method != "HEAD" && method != "put" && method != "PUT" &&
@@ -37,7 +37,7 @@ bool RequestChecker::checkRequestline(const string &method, const string &resour
 bool RequestChecker::checkHost(Request &req)
 {
     try {
-        req.getHeaders().at("Host");
+        req.get_headers().at("Host");
         return true;
     } catch(std::out_of_range& e) {
         return false;

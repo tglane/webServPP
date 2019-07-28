@@ -14,9 +14,9 @@ class LoggingMiddleware : public Middleware {
 
 public:
 
-    void processRequest(Request::Ptr req, Response::Ptr res) override;
+    void processRequest(Request& req, Response& res) override;
 
-    void processResponse(Response::Ptr res) override;
+    void processResponse(Response& res) override;
 
 };
 

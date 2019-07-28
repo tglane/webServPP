@@ -27,8 +27,6 @@ class Webserver {
 
 public:
 
-    using Ptr = std::shared_ptr<Webserver>;
-
     /**
      * @brief Constructor
      * @param port to listen on
@@ -45,14 +43,14 @@ public:
      * Adds a given app shared_ptr to m_apps and registers the routes of the app
      * @param app
      */
-    void addApp(const std::shared_ptr<App>& app);
+    void add_app(std::unique_ptr<App> app);
 
     /**
      * Adds a given middelware to m_middelwares to call processRequest() and processResponse()
      *  in the main loop
      * @param middleware
      */
-    void addMiddleware(const std::shared_ptr<Middleware>& middleware);
+    void add_middleware(std::unique_ptr<Middleware> middleware);
 
     /**
      * @brief starts the main loop of the webserver to handle incoming requests
@@ -65,21 +63,19 @@ private:
      * @brief handles a connection and returns an answer to the caller
      * @param conn socket connection to the client
      */
-    void handleConnection(const socketwrapper::TCPSocket::Ptr& conn);
+    void handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn);
 
-    void sendResponse(const socketwrapper::TCPSocket::Ptr& conn, const string& response);
+    void send_response(socketwrapper::TCPSocket& conn, Response& response);
 
     int m_port;
     bool m_enable_https = false;
 
-    socketwrapper::TCPSocket::Ptr m_socket; /// Underlying TCP Socket for communication
-    socketwrapper::SSLTCPSocket::Ptr m_secure_socket;
+    socketwrapper::TCPSocket m_socket; /// Underlying TCP Socket for communication
+    socketwrapper::SSLTCPSocket m_secure_socket;
 
-    list<std::shared_ptr<App>> m_apps; /// List with registered Apps
+    list<std::unique_ptr<App>> m_apps; /// List with registered Apps
 
-    list<std::shared_ptr<Middleware>> m_middlewares; /// List with registered Middelwares
-
-    list<std::shared_ptr<std::thread>> m_threads;
+    list<std::unique_ptr<Middleware>> m_middlewares; /// List with registered Middelwares
 
     RequestChecker reqCheck;
 

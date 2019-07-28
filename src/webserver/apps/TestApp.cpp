@@ -6,33 +6,37 @@
 
 void TestApp::registerRoutes()
 {
-
-    addRoute("/test/normal", std::bind(&TestApp::show, this));
-    addRoute("/test/redirect", std::bind(&TestApp::showRedirect, this));
-    addRoute("/test", std::bind(&TestApp::showTemplate, this));
-    addRoute("/test/ajax", std::bind(&TestApp::ajaxTest, this));
+    addRoute("/test/normal", std::bind(&TestApp::show, this, std::placeholders::_1, std::placeholders::_2));
+    addRoute("/test/redirect", std::bind(&TestApp::showRedirect, this, std::placeholders::_1, std::placeholders::_2));
+    addRoute("/test", std::bind(&TestApp::showTemplate, this, std::placeholders::_1, std::placeholders::_2));
+    addRoute("/test/ajax", std::bind(&TestApp::ajaxTest, this, std::placeholders::_1, std::placeholders::_2));
 }
 
-void TestApp::show()
+void TestApp::show(Request& req, Response& res)
 {
-    m_res->setBodyFromFile("/templates/test.html");
+    res.set_body_from_file("/templates/test.html");
 }
 
-void TestApp::showRedirect()
+void TestApp::showRedirect(Request& req, Response& res)
 {
-    m_res->sendRedirect("/test");
+    res.send_redirect("/test");
 }
 
-void TestApp::showTemplate()
+void TestApp::showTemplate(Request& req, Response& res)
 {
     list<string> l{"Hallo", "dies", "ist", "ein", "Test", "der", "Template-Enginge", "!"};
 
-    m_res->setBodyFromTemplate("test.tmpl.html", map<string, std::variant<string, int, list<string>>>{{"headline", "Ja moin"}, {"text", "löl hier ist ja jz doch was xD"}, {"its", l}, {"it", 4}});
+    res.set_body_from_template("test.tmpl.html",
+                               map<string, std::variant<string, int, list<string>>>{{"headline", "Ja moin"},
+                                                                                    {"text",     "löl hier ist ja jz doch was xD"},
+                                                                                    {"its",      l},
+                                                                                    {"it",       4}});
 }
 
-void TestApp::ajaxTest()
+void TestApp::ajaxTest(Request& req, Response& res)
 {
-    if(m_req->getMethod() == "POST") {
-        m_res->setBody("<div id=\"messages\"><div>" + m_req->getParams().at("new_text") + "</div><br>" + m_req->getParams().at("old_text") + "</div>");
+    if(req.get_method() == "POST") {
+        res.set_body("<div id=\"messages\"><div>" + req.get_params().at("new_text") + "</div><br>" +
+                     req.get_params().at("old_text") + "</div>");
     }
 }

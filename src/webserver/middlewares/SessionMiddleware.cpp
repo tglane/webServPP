@@ -6,10 +6,10 @@
 
 map<string, Session> SessionMiddleware::c_sessions;
 
-void SessionMiddleware::processRequest(Request::Ptr req, Response::Ptr res)
+void SessionMiddleware::processRequest(Request& req, Response& res)
 {
     try {
-        Cookie session_cookie = req->getCookies().at("_sessid");
+        Cookie session_cookie = req.get_cookies().at("_sessid");
         last_uuid = session_cookie.getValue();
         c_sessions.at(session_cookie.getValue());
     } catch(std::out_of_range& e) {
@@ -19,17 +19,17 @@ void SessionMiddleware::processRequest(Request::Ptr req, Response::Ptr res)
 
 }
 
-void SessionMiddleware::processResponse(Response::Ptr res)
+void SessionMiddleware::processResponse(Response& res)
 {
     /**if(!m_last_session.isEmpty()) {
-        res->addCookie(m_last_session.makeCookie());
+        res.addCookie(m_last_session.makeCookie());
     } else {
-        //res->addCookie(m_last_session.makeDeleteCookie());
+        //res.addCookie(m_last_session.makeDeleteCookie());
     }*/
 
     try {
         c_sessions.at(last_uuid);
-        res->addCookie(c_sessions.at(last_uuid).makeCookie());
+        res.add_cookie(c_sessions.at(last_uuid).makeCookie());
     } catch(std::out_of_range& e) {
 
     }

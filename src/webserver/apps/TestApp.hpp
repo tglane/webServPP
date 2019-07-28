@@ -11,13 +11,13 @@ class TestApp : public App {
 
     void registerRoutes() override;
 
-    void show();
+    void show(Request& req, Response& res);
 
-    void showRedirect();
+    void showRedirect(Request& req, Response& res);
 
-    void showTemplate();
+    void showTemplate(Request& req, Response& res);
 
-    void ajaxTest();
+    void ajaxTest(Request& req, Response& res);
 
 };
 

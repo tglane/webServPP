@@ -20,13 +20,13 @@ public:
      * @param req
      * @param res
      */
-    virtual void processRequest(Request::Ptr req, Response::Ptr res) = 0;
+    virtual void processRequest(Request& req, Response& res) = 0;
 
     /**
      * @brief Processes the given response in a specific way for each middelware before being send to the client
      * @param res
      */
-    virtual void processResponse(Response::Ptr res) = 0;
+    virtual void processResponse(Response& res) = 0;
 
 };
 

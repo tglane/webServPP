@@ -5,7 +5,6 @@
 #include "Request.hpp"
 #include <iostream>
 
-//TODO secure parsing by checking for valid http requests
 void Request::parse(char* request)
 {
     m_request = string(request);
@@ -13,10 +12,10 @@ void Request::parse(char* request)
     //TODO: log the request using the logging middleware - to be implemented
 
     /* extract the request line */
-    std::istringstream f(m_request);
+    std::istringstream request_stringstream {m_request};
     string request_line;
-    getline(f, request_line);
-    parse_requestline(request_line);
+    getline(request_stringstream, request_line);
+    this->parse_requestline(request_line);
 
     /* Parse resource to path and params */
     size_t pos_q;
@@ -27,12 +26,12 @@ void Request::parse(char* request)
     else
     {
         m_path = m_resource.substr(0, pos_q);
-        parse_params(m_resource.substr(pos_q + 1));
+        this->parse_params(m_resource.substr(pos_q + 1)); //TODO Dont know wether this works correctly because parse_params uses rvalue ref
     }
 
     /* Read and parse request headers */
     string headerline;
-    while(getline(f, headerline) && headerline != "\r")
+    while(getline(request_stringstream, headerline) && headerline != "\r")
     {
         size_t pos = headerline.find(':');
         if(pos != string::npos) {
@@ -53,10 +52,10 @@ void Request::parse(char* request)
         it = m_headers.find("Content-Length");
         if(it != m_headers.end() && stoi(it->second) != 0)
         {
-            char* body = new char[stoi(it->second)];
-            f.read(body, stoi(it->second));
-            parse_params(body);
-            delete[] body;
+            //char* body = new char[stoi(it->second)];
+            char body[stoi(it->second)]; //TODO Dont know wether this works
+            request_stringstream.read(body, stoi(it->second));
+            this->parse_params(body);
         }
     }
 }
@@ -79,7 +78,7 @@ void Request::parse_requestline(string& requestline)
     }
 }
 
-void Request::parse_params(string param_string)
+void Request::parse_params(string&& param_string)
 {
     //std::cout << param_string << std::endl;
     if(param_string.find('#') == string::npos)
@@ -103,21 +102,22 @@ void Request::parse_params(string param_string)
     }
 }
 
-void Request::parse_cookies(string cookies)
+void Request::parse_cookies(string& cookies)
 {
     //std::cout << cookies << std::endl;
     std::istringstream iss(cookies);
     std::vector<string> cookies_split((std::istream_iterator<string>(iss)),
                                           std::istream_iterator<string>());
 
-    for(auto it = cookies_split.begin(); it != cookies_split.end(); it++)
+    //for(auto it = cookies_split.begin(); it != cookies_split.end(); it++)
+    for(auto& it : cookies_split)
     {
-        if((*it).find(";") != string::npos)
+        if(it.find(';') != string::npos)
         {
-            *it = (*it).substr(0, (*it).length() - 1);
+            it = it.substr(0, it.length() - 1);
         }
-        size_t pos = (*it).find("=");
-        Cookie c((*it).substr(0, pos), (*it).substr(pos + 1));
-        m_cookies.insert(std::pair<string, Cookie>((*it).substr(0, pos), c));
+        size_t pos = it.find('=');
+        Cookie c(it.substr(0, pos), it.substr(pos + 1));
+        m_cookies.insert(std::pair<string, Cookie>(it.substr(0, pos), c));
     }
 }

@@ -5,38 +5,36 @@
 #include "Webserver.hpp"
 
 Webserver::Webserver(int port, int queue_size, bool enable_https)
-    : reqCheck()
+    : reqCheck(), m_secure_socket(AF_INET, "/etc/ssl/certs/cert.pem", "/etc/ssl/private/key.pem"), m_socket(AF_INET)
 {
     m_port = port;
     if(enable_https)
     {
         m_enable_https = true;
-        m_secure_socket = std::make_shared<socketwrapper::SSLTCPSocket>(AF_INET, "/etc/ssl/certs/cert.pem", "/etc/ssl/private/key.pem");
-        m_secure_socket->bind("0.0.0.0", m_port);
-        m_secure_socket->listen(queue_size);
+        m_secure_socket.bind("0.0.0.0", m_port);
+        m_secure_socket.listen(queue_size);
     }
     else
     {
-        m_socket = std::make_shared<socketwrapper::TCPSocket>(AF_INET);
-        m_socket->bind("0.0.0.0", m_port);
-        m_socket->listen(queue_size);
+        m_socket.bind("0.0.0.0", m_port);
+        m_socket.listen(queue_size);
     }
 }
 
 Webserver::~Webserver()
 {
-    m_socket->close();
+    m_socket.close();
 }
 
-void Webserver::addApp(const std::shared_ptr<App>& app)
+void Webserver::add_app(std::unique_ptr<App> app)
 {
     app->registerRoutes();
-    m_apps.push_back(app);
+    m_apps.push_back(std::move(app));
 }
 
-void Webserver::addMiddleware(const std::shared_ptr<Middleware>& middleware)
+void Webserver::add_middleware(std::unique_ptr<Middleware> middleware)
 {
-    m_middlewares.push_back(middleware);
+    m_middlewares.push_back(std::move(middleware));
 }
 
 void Webserver::serve()
@@ -56,72 +54,81 @@ void Webserver::serve()
         //TODO allow use of http and https socket at the same time?
 
         /* Handle incoming requests within a new thread */
-        std::shared_ptr<std::thread> t;
+        std::thread t;
         try {
             if (m_enable_https) {
-                t = std::make_shared<std::thread>(&Webserver::handleConnection, this, std::move(m_secure_socket->accept()));
-                t->detach();
-                //m_threads.push_back(t);
+                this->handle_connection(std::move(m_secure_socket.accept()));
+
+                /*t = std::thread(&Webserver::handle_connection, this, m_secure_socket.accept().get());
+                t.detach();*/
             } else {
-                t = std::make_shared<std::thread>(&Webserver::handleConnection, this, m_socket->accept());
-                t->detach();
-                //m_threads.push_back(t);
+                this->handle_connection(std::move(m_socket.accept()));
+
+                /*t = std::thread(&Webserver::handle_connection, this, m_socket.accept().get());
+                t.detach();*/
             }
-
-
-        } catch(socketwrapper::SocketAcceptingException &ex) {
+        } catch(socketwrapper::SocketAcceptingException& ex) {
             std::cout << ex.what() << std::endl;
         }
     }
 }
 
-void Webserver::handleConnection(const socketwrapper::TCPSocket::Ptr& conn)
+void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn)
 {
     /* wait until data is available */
-    while(conn->bytes_available() == 0)
+    try
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        while(conn->bytes_available() == 0) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
     }
+    catch(socketwrapper::ReadBytesAvailableException& e) { return; } //TODO ?
 
     std::cout << "---New Request---" << std::endl;
-    Request::Ptr req = std::make_shared<Request>();
-    char* request = conn->readAll();
-    req->parse(request);
-    Response::Ptr res = std::make_shared<Response>(req);
+
+    std::shared_ptr<Request> req = std::make_shared<Request>();
+    auto buffer = conn->read_all();
+    req->parse(buffer.get());
+    std::shared_ptr<Response> res = std::make_shared<Response>(req);
 
     if(!reqCheck.checkRequest(*req))
     {
         //TODO implement this in logging middleware
-        res->setCode("400");
-        res->addHeader("Connection", "close");
-        res->createString();
+        res->set_code("400");
+        res->add_header("Connection", "close");
+        res->create_string();
         std::cout << "400 --- Bad Request" << std::endl;
         conn->close();
-        delete[] request;
         return;
     }
 
     /* Process request from all registered middlewares */
-    for(auto it = m_middlewares.begin(); it != m_middlewares.end(); it++)
+    for(auto& it : m_middlewares)
     {
-        (*it)->processRequest(req, res);
+        it->processRequest(*req, *res);
     }
 
     /* Try to process the called route from a registered app, css file or javascript file */
     bool processed = false;
-    string path = req->getPath();
+    string&& path = req->get_path();
 
     if(std::regex_match(path, std::regex("(.*\\.(js|css|ico|img|jpg|png))")))
     {
-        try {
-            res->setBodyFromFile(path);
-        } catch(std::invalid_argument& e) { std::cout << e.what() << std::endl; }
-        processed = true;
+        try
+        {
+            res->set_body_from_file(path);
+            processed = true;
+        }
+        catch(std::invalid_argument& e)
+        {
+            processed = false;
+            std::cout << e.what() << std::endl;
+        }
     }
 
     for(auto it = m_apps.begin(); it != m_apps.end() && !processed; it++)
     {
-        if((*it)->getCallback(path, req, res))
+        if((*it)->getCallback(path, *req, *res))
         {
             processed = true;
         }
@@ -129,47 +136,38 @@ void Webserver::handleConnection(const socketwrapper::TCPSocket::Ptr& conn)
 
     if(!processed)
     {
-        res->setCode("404");
+        res->set_code("404");
         char notFoundBody[] = "<!DOCTYPE html><html><head><title>404 - Not Found</title><body><h1>404 - Not Found</h1></body></html>\r\n";
-        res->setBody(notFoundBody);
+        res->set_body(notFoundBody);
     }
     else
     {
         /* If route was processed process response from registered middlewares */
-        for(auto it = m_middlewares.begin(); it != m_middlewares.end(); it++)
+        for(auto& it : m_middlewares)
         {
-            (*it)->processResponse(res);
+            it->processResponse(*res);
         }
     }
 
     bool sent = false;
     try {
-        string connection_type = req->getHeaders().at("Connection");
+        string connection_type = req->get_headers().at("Connection");
         if(connection_type.find("keep-alive") != string::npos)
         {
-            res->addHeader("Connection", "keep-alive");
-            string response = res->createString();
-            sendResponse(conn, res->createString());
-            delete[] request;
-            handleConnection(conn);
-            conn->close();
+            res->add_header("Connection", "keep-alive");
+            this->send_response(*conn, *res);
+            this->handle_connection(std::move(conn));
             sent = true;
         }
-    } catch(std::out_of_range& e) {}
-    if(!sent)
+    } catch(std::out_of_range& e)
     {
-        res->addHeader("Connection", "close");
-        string response = res->createString();
-        sendResponse(conn, res->createString());
-        delete[] request;
+        res->add_header("Connection", "close");
+        this->send_response(*conn, *res);
         conn->close();
     }
 }
 
-void Webserver::sendResponse(const socketwrapper::TCPSocket::Ptr &conn, const string& response)
+void Webserver::send_response(socketwrapper::TCPSocket& conn, Response& response)
 {
-    char* res_arr = new char[response.length()+1];
-    strcpy(res_arr, response.c_str());
-    conn->write(res_arr);
-    delete[] res_arr;
+    conn.write(response.create_string().c_str());
 }

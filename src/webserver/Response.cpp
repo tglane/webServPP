@@ -9,11 +9,11 @@
 
 #include "Response.hpp"
 
-std::mutex Response::mu;
+std::mutex Response::c_file_mutex;
 
-string Response::createString()
+string Response::create_string()
 {
-    string response;
+    string response {};
 
     /* Set some response fields if missing */
     if(m_code.empty())
@@ -27,18 +27,20 @@ string Response::createString()
     std::time_t now(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
 
     /* Begin with response line */
-    response.append("HTTP/1.1 " + m_code + " " + getPhrase(m_code) + "\r\n" + "Date: " + std::ctime(&now));
+    response.append("HTTP/1.1 " + m_code + " " + get_phrase(m_code) + "\r\n" + "Date: " + std::ctime(&now));
 
     /* Append all cookies to response */
-    for(auto it = m_cookies.begin(); it != m_cookies.end(); it++)
+    //for(auto it = m_cookies.begin(); it != m_cookies.end(); it++)
+    for(auto& it : m_cookies) //TODO auto& or auto?
     {
-        response.append((*it).second.buildHeader() + "\r\n");
+        response.append(it.second.buildHeader() + "\r\n");
     }
 
     /* Append all headers to response */
-    for(auto it = m_headers.begin(); it != m_headers.end(); it++)
+    //for(auto it = m_headers.begin(); it != m_headers.end(); it++)
+    for(auto& it : m_headers) //TODO auto& or auto
     {
-        response.append(it->first + ": " + it->second + "\r\n");
+        response.append(it.first + ": " + it.second + "\r\n");
     }
 
     /* Append body to response line */
@@ -51,91 +53,93 @@ string Response::createString()
     return response;
 }
 
-void Response::setBodyFromTemplate(const string& templateFile, map<string, std::variant<string, int, list<string>>> values)
+void Response::set_body_from_template(const string& templateFile, const map<string, std::variant<string, int, list<string>>>& values)
 {
     /* Open template file and read it into a string if found */
-    mu.lock();
+    c_file_mutex.lock();
     if(templateFile.rfind("..") != string::npos)
     {
-        mu.unlock();
+        c_file_mutex.unlock();
         throw std::invalid_argument("Detected not allowed characters in path!\n");
     }
     //TODO use only the filename and search only in allowed folders for the filename
     std::ifstream ifs("../src/templates/" + templateFile);
     if(!ifs.good())
     {
-        mu.unlock();
+        c_file_mutex.unlock();
         throw std::invalid_argument("Requested file not found.\n");
     }
     std::stringstream sstr;
     sstr << ifs.rdbuf();
     string htmlTemplate(sstr.str());
-    mu.unlock();
+    c_file_mutex.unlock();
 
     /* Substitue template file placeholders with the given values */
-    Jinja2CppLight::Template aTemplate(htmlTemplate);
+    Jinja2CppLight::Template aTemplate {htmlTemplate};
 
-    for(auto it = values.begin(); it != values.end(); it++)
+    //for(auto it = values.begin(); it != values.end(); it++)
+    for(const auto& it : values)
     {
         /* Substitute a string */
         try {
-            aTemplate.setValue(it->first, std::get<string>(it->second));
+            aTemplate.setValue(it.first, std::get<string>(it.second));
         } catch (const std::bad_variant_access&) {}
         /* Substitute an int */
         try {
-            aTemplate.setValue(it->first, std::get<int>(it->second));
+            aTemplate.setValue(it.first, std::get<int>(it.second));
         } catch (const std::bad_variant_access&) {}
         /* Substitute a list of strings */
         try {
             Jinja2CppLight::TupleValue tmp;
-            for(auto ite = std::get<list<string>>(it->second).begin(); ite != std::get<list<string>>(it->second).end(); ite++)
+            //for(auto ite = std::get<list<string>>(it.second).begin(); ite != std::get<list<string>>(it.second).end(); ite++)
+            for(auto& ite : std::get<list<string>>(it.second))
             {
-                tmp.addValue(*ite);
+                tmp.addValue(ite);
             }
-            aTemplate.setValue(it->first, tmp);
+            aTemplate.setValue(it.first, tmp);
         } catch (const std::bad_variant_access&) {}
     }
 
-    setBody(aTemplate.render());
+    set_body(aTemplate.render());
 }
 
-void Response::setBodyFromFile(const string &bodyFile)
+void Response::set_body_from_file(const string &bodyFile)
 {
     /* Open template file and read it into a string if found */
-    mu.lock();
+    c_file_mutex.lock();
     if(bodyFile.rfind("..") != string::npos)
     {
-        mu.unlock();
+        c_file_mutex.unlock();
         throw std::invalid_argument("Path contains not allowed characters!\n");
     }
     //TODO use only the filename and search only in allowed folders for the filename
     std::ifstream ifs("../src" + bodyFile);
     if(!ifs.good())
     {
-        mu.unlock();
+        c_file_mutex.unlock();
         throw std::invalid_argument("Requested file not found.\n");
     }
     std::stringstream sstr;
     sstr << ifs.rdbuf();
     string htmlBody(sstr.str());
-    mu.unlock();
-    setBody(htmlBody);
+    c_file_mutex.unlock();
+    set_body(htmlBody);
 }
 
-void Response::setBody(const string& body)
+void Response::set_body(const string& body)
 {
     m_body = body;
-    addHeader("Content-Length", std::to_string(m_body.size()));
+    add_header("Content-Length", std::to_string(m_body.size()));
 }
 
-void Response::sendRedirect(const string& url)
+void Response::send_redirect(const string& url)
 {
-    addHeader("Location", url);
-    setCode("302");
-    createString();
+    add_header("Location", url);
+    set_code("302");
+    //create_string();
 }
 
-void Response::addHeader(const string& key, const string& value)
+void Response::add_header(const string& key, const string& value)
 {
     auto it = m_headers.find(key);
     if(it != m_headers.end())
@@ -146,7 +150,7 @@ void Response::addHeader(const string& key, const string& value)
     }
 }
 
-void Response::addCookie(Cookie cookie)
+void Response::add_cookie(Cookie cookie)
 {
     auto it = m_cookies.find(cookie.getName());
     if(it != m_cookies.end())
@@ -157,9 +161,9 @@ void Response::addCookie(Cookie cookie)
     }
 }
 
-void Response::setContentType(const string& contentType)
+void Response::set_content_type(const string& contentType)
 {
-    auto it = m_headers.find("Content-Type");
+    const auto& it = m_headers.find("Content-Type");
     if(it != m_headers.end())
     {
         it->second = contentType;
@@ -170,12 +174,12 @@ void Response::setContentType(const string& contentType)
     }
 }
 
-string Response::getPhrase(const string& code)
+string Response::get_phrase(const string& code)
 {
     string codephrase = Statuscodes::getPhrase(code);
     if(codephrase.empty())
     {
-        setCode("500");
+        set_code("500");
         return "Unknown statuscode requested in code";
     }
     return codephrase;

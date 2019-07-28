@@ -25,7 +25,6 @@ using std::map;
 class Request {
 
 public:
-    using Ptr = std::shared_ptr<Request>;
 
     Request() = default;
 
@@ -35,19 +34,23 @@ public:
      */
     void parse(char* request);
 
-    map<string, string> getHeaders() { return m_headers; }
+    map<string, string> get_headers() { return m_headers; }
 
-    string getMethod() { return m_method; }
+    std::string get_header(const string &key) { return m_headers.at(key); }
 
-    string getResource() { return m_resource; }
+    string get_method() { return m_method; }
 
-    string getProtocol() { return m_protocol; }
+    string get_resource() { return m_resource; }
 
-    string getPath() { return m_path; }
+    string get_protocol() { return m_protocol; }
 
-    std::map<string, string> getParams() { return m_params; }
+    string get_path() { return m_path; }
 
-    std::map<string, Cookie> getCookies() { return m_cookies; }
+    std::map<string, string> get_params() { return m_params; }
+
+    std::string get_param(const std::string &key) { return m_params.at(key); }
+
+    std::map<string, Cookie> get_cookies() { return m_cookies; }
 
 private:
 
@@ -61,13 +64,13 @@ private:
      * Parses the query string into map m_params
      * @param param_string
      */
-    void parse_params(string param_string);
+    void parse_params(string&& param_string);
 
     /**
      * Constructs cookie objects from a http request header
      * @param cookies http header containing the cookies
      */
-    void parse_cookies(string cookies);
+    void parse_cookies(string& cookies);
 
     string m_request;    /// unparsed request
 
@@ -75,7 +78,7 @@ private:
     string m_protocol;   /// protocol of this request - should be HTTP/*.*
     string m_resource;   /// resource addressed by this request
     string m_path;       /// path of the resource addressed by this request
-    string m_fragment;
+    string m_fragment; //TODO parse fragment?
 
     map<string, string> m_params; /// contains names and values of the query string
     map<string, string> m_headers; /// contains names and values of the http request headers
