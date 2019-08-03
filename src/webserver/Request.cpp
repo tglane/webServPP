@@ -26,7 +26,8 @@ void Request::parse(char* request)
     else
     {
         m_path = m_resource.substr(0, pos_q);
-        this->parse_params(m_resource.substr(pos_q + 1)); //TODO Dont know wether this works correctly because parse_params uses rvalue ref
+        std::string param_string {m_resource.substr(pos_q + 1)};
+        this->parse_params(m_resource.substr(pos_q + 1));
     }
 
     /* Read and parse request headers */
@@ -102,7 +103,7 @@ Cookie Request::get_cookie(const std::string &cookie_name)
     }
 }
 
-const void Request::parse_requestline(string& requestline)
+const void Request::parse_requestline(const string& requestline)
 {
     std::istringstream iss(requestline);
     std::vector<string> requestline_split((std::istream_iterator<string>(iss)),

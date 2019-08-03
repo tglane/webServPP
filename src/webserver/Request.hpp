@@ -60,7 +60,7 @@ private:
      * Parses a http request line and stores the parameters in member variables
      * @param requestline String that contains a http request line
      */
-    const void parse_requestline(string& requestline);
+    const void parse_requestline(const string& requestline);
 
     /**
      * Parses the query string into map m_params

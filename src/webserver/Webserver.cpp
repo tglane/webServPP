@@ -119,8 +119,6 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
     /* Try to process the called route from a registered app, css file or javascript file */
     bool processed = false;
     std::string&& path = req->get_path();
-
-    //TODO imporve with Statuscodes::get_mime_type()
     std::size_t pos = path.rfind('.');
     if(pos != string::npos)
     {
@@ -160,6 +158,7 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
         }
     }
 
+    //TODO add connection: keep-alive feature
     res->add_header("Connection", "close");
     Webserver::send_response(*conn, *res);
     conn->close();
