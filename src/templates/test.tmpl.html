@@ -4,19 +4,22 @@
     <meta charset="UTF-8">
     <title>Bye-bye baby bye-bye</title>
     <script src="../static/test.js"></script>
-    <link rel="stylesheet" href="../static/test.css">
+    <link type="text/css" rel="stylesheet" href="/static/test.css">
 </head>
 
 <body>
     <h1 class="header" id="headline">{{headline}}</h1>
     {{text}}
     <br>
-    {% for var in its %}
-        {{ var }}
-    {% endfor %} <br> Und hier geht es weiter. Mit einer Schleife zählen: <br>
-    {% for i in range(it) %}
-        Zahl: {{ i }};
-    {% endfor %} <br>
-    {% if it %} Und noch eine Bedingung die nur angezeigt wird, wenn vorher gezählt wurde {% endif %}
+    <div>
+        {% for var in its %}
+            {{ var }}
+        {% endfor %} <br>
+        Und hier geht es weiter. Mit einer Schleife zählen: <br>
+        {% for i in range(it) %}
+            Zahl: {{ i }};
+        {% endfor %} <br>
+        {% if it %} Und noch eine Bedingung die nur angezeigt wird, wenn vorher gezählt wurde {% endif %}
+    </div>
 </body>
 </html>

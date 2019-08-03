@@ -2,6 +2,7 @@ function postText() {
     var oreq = new XMLHttpRequest();
     oreq.addEventListener("load", function () {
         var parser = new DOMParser();
+        console.log(this.responseText);
         let text = parser.parseFromString(this.responseText, "text/html");
         document.getElementById('text_kram').innerHTML = text.getElementById("messages").innerHTML;
     });

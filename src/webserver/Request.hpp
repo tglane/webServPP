@@ -46,11 +46,13 @@ public:
 
     string get_path() { return m_path; }
 
-    std::map<string, string> get_params() { return m_params; }
+    std::map<std::string, std::string> get_params() { return m_params; }
 
     std::string get_param(const std::string &key);
 
     std::map<string, Cookie> get_cookies() { return m_cookies; }
+
+    Cookie get_cookie(const std::string& cookie_name);
 
 private:
 
@@ -58,7 +60,7 @@ private:
      * Parses a http request line and stores the parameters in member variables
      * @param requestline String that contains a http request line
      */
-    void parse_requestline(string& requestline);
+    const void parse_requestline(string& requestline);
 
     /**
      * Parses the query string into map m_params
@@ -70,19 +72,19 @@ private:
      * Constructs cookie objects from a http request header
      * @param cookies http header containing the cookies
      */
-    void parse_cookies(const string& cookies);
+    void parse_cookies(const std::string& cookies);
 
-    string m_request;    /// unparsed request
+    std::string m_request;    /// unparsed request
 
-    string m_method;     /// http method used by this request (e.g. post, get, ...)
-    string m_protocol;   /// protocol of this request - should be HTTP/*.*
-    string m_resource;   /// resource addressed by this request
-    string m_path;       /// path of the resource addressed by this request
-    string m_fragment; //TODO parse fragment?
+    std::string m_method;     /// http method used by this request (e.g. post, get, ...)
+    std::string m_protocol;   /// protocol of this request - should be HTTP/*.*
+    std::string m_resource;   /// resource addressed by this request
+    std::string m_path;       /// path of the resource addressed by this request
+    std::string m_fragment; //TODO parse fragment?
 
-    map<string, string> m_params; /// contains names and values of the query string
-    map<string, string> m_headers; /// contains names and values of the http request headers
-    map<string, Cookie> m_cookies; /// contains names and values of the cookies
+    std::map<std::string, std::string> m_params; /// contains names and values of the query string
+    std::map<std::string, std::string> m_headers; /// contains names and values of the http request headers
+    std::map<std::string, Cookie> m_cookies; /// contains names and values of the cookies
 
 };
 

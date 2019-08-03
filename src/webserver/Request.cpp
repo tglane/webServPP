@@ -90,7 +90,19 @@ std::string Request::get_param(const std::string &key)
     }
 }
 
-void Request::parse_requestline(string& requestline)
+Cookie Request::get_cookie(const std::string &cookie_name)
+{
+    try
+    {
+        return m_cookies.at(cookie_name);
+    }
+    catch(std::out_of_range& e)
+    {
+        throw std::out_of_range("No matching cookie found");
+    }
+}
+
+const void Request::parse_requestline(string& requestline)
 {
     std::istringstream iss(requestline);
     std::vector<string> requestline_split((std::istream_iterator<string>(iss)),

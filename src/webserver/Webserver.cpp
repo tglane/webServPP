@@ -58,18 +58,22 @@ void Webserver::serve()
         //TODO allow use of http and https socket at the same time?
 
         /* Handle incoming requests within a new thread */
-        std::thread t;
         try {
-            if (m_enable_https) {
+            if (m_enable_https)
+            {
                 auto connection_socket = m_secure_socket.accept();
-                t = std::thread(&Webserver::handle_connection, this, std::move(connection_socket));
-                t.detach();
-            } else {
-                auto connection_socket = m_socket.accept();
-                t = std::thread(&Webserver::handle_connection, this, std::move(connection_socket));
+                std::thread t = std::thread(&Webserver::handle_connection, this, std::move(connection_socket));
                 t.detach();
             }
-        } catch(socketwrapper::SocketAcceptingException& ex) {
+            else
+            {
+                auto connection_socket = m_socket.accept();
+                std::thread t = std::thread(&Webserver::handle_connection, this, std::move(connection_socket));
+                t.detach();
+            }
+        }
+        catch(socketwrapper::SocketAcceptingException& ex)
+        {
             std::cout << ex.what() << std::endl;
         }
     }
@@ -91,8 +95,7 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
     std::cout << "---New Request---conn sock:" << conn->get_socket_descriptor() << std::endl;
 
     std::shared_ptr<Request> req = std::make_shared<Request>();
-    auto buffer = conn->read_all();
-    req->parse(buffer.get());
+    req->parse(conn->read_all().get());
     std::shared_ptr<Response> res = std::make_shared<Response>(req);
 
     if(!reqCheck.check_request(*req))
@@ -101,6 +104,7 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
         res->set_code("400");
         res->add_header("Connection", "close");
         res->create_string();
+        Webserver::send_response(*conn, *res);
         std::cout << "400 --- Bad Request" << std::endl;
         conn->close();
         return;
@@ -114,27 +118,31 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
 
     /* Try to process the called route from a registered app, css file or javascript file */
     bool processed = false;
-    string&& path = req->get_path();
+    std::string&& path = req->get_path();
 
-    if(std::regex_match(path, std::regex("(.*\\.(js|css|ico|img|jpg|png))")))
+    //TODO imporve with Statuscodes::get_mime_type()
+    std::size_t pos = path.rfind('.');
+    if(pos != string::npos)
     {
         try
         {
+            res->add_header("Content-Type", Statuscodes::get_mime_type(path.substr(pos)));
             res->set_body_from_file(path);
             processed = true;
         }
         catch(std::invalid_argument& e)
         {
             processed = false;
-            //std::cout << e.what() << std::endl;
         }
     }
-
-    for(auto it = m_apps.begin(); it != m_apps.end() && !processed; it++)
+    else
     {
-        if((*it)->getCallback(path, *req, *res))
+        for(auto it = m_apps.begin(); it != m_apps.end(); it++)
         {
-            processed = true;
+            if((*it)->getCallback(path, *req, *res))
+            {
+                processed = true;
+            }
         }
     }
 

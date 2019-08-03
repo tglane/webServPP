@@ -4,7 +4,7 @@
 
 #include "Statuscodes.hpp"
 
-map<int, string> Statuscodes::c_codes = {
+std::map<int, std::string> Statuscodes::_codes = {
         /* 1xx - Information */
         {100, "Continue"},
         {101, "Switching Protocols"},
@@ -78,10 +78,28 @@ map<int, string> Statuscodes::c_codes = {
         {510, "Not Extended"}
 };
 
-string Statuscodes::get_phrase(const string& code)
+std::map<std::string, std::string> Statuscodes::_mime_types {
+        /* text mime types */
+        {".js", "text/javascript"},
+        {".css", "text/css"},
+        {".html", "text/html"},
+        {".htm", "text/html"},
+        {".shtml", "text/html"},
+
+        /* image mime types */
+        {".ico", "image/x-icon"},
+        {".png", "image/png"},
+        {".jpg", "image/jpeg"},
+        {".jepg", "image/jpeg"},
+        {".jpe", "image/jpeg"},
+        {".gif", "image/gif"},
+        {".bmp", "image/bmp"}
+};
+
+const std::string Statuscodes::get_phrase(const std::string& code)
 {
-    auto it = c_codes.find(std::stoi(code));
-    if(it != c_codes.end())
+    const auto& it = _codes.find(std::stoi(code));
+    if(it != _codes.end())
     {
         return (*it).second;
     }
@@ -89,4 +107,17 @@ string Statuscodes::get_phrase(const string& code)
     {
         return "";
     };
+}
+
+const std::string Statuscodes::get_mime_type(const std::string& file_extension)
+{
+    const auto& it = _mime_types.find(file_extension);
+    if(it != _mime_types.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        return "";
+    }
 }

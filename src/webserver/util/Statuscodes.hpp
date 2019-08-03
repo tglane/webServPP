@@ -8,9 +8,6 @@
 #include <map>
 #include <string>
 
-using std::string;
-using std::map;
-
 /**
  * @brief Container class for http status phrases
  */
@@ -23,11 +20,20 @@ public:
      * @param code
      * @return string representation of status phrase
      */
-    static string get_phrase(const string& code);
+    const static std::string get_phrase(const std::string& code);
+
+    /**
+     * @brief Gets the mime type for a given file extension
+     * @param file_extension
+     * @return string representation of mime type
+     */
+    const static std::string get_mime_type(const std::string& file_extension);
 
 private:
 
-    static map<int, string> c_codes; /// static map containing all http status phrases mapped to their code as key
+    static std::map<int, std::string> _codes;
+
+    static std::map<std::string, std::string> _mime_types; //TODO complete list of mime types
 
 };
 
