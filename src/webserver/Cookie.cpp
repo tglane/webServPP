@@ -9,16 +9,16 @@ Cookie::Cookie(string name, string value, bool httpOnly, bool secure, string com
 {
     m_name = std::move(name);
     m_value = std::move(value);
-    m_httpOnly = httpOnly;
+    m_http_only = httpOnly;
     m_secure = secure;
     m_comment = std::move(comment);
     m_domain = std::move(domain);
     m_max_age = std::move(max_age);
     m_path = std::move(path);
-    if(expires > 0) { setExpiryDate(expires); }
+    if(expires > 0) { set_expiry_date(expires); }
 }
 
-string Cookie::buildHeader()
+string Cookie::build_header()
 {
     string header = "Set-Cookie: " + m_name + "=" + m_value;
 
@@ -26,14 +26,14 @@ string Cookie::buildHeader()
     if(!m_domain.empty()) { header.append("; Domain=" + m_domain); }
     if(!m_max_age.empty()) { header.append("; Max-Age=" + m_max_age); }
     if(!m_path.empty()) { header.append("; Path=" + m_path); }
-    if(m_httpOnly) { header.append("; HttpOnly"); }
+    if(m_http_only) { header.append("; HttpOnly"); }
     if(m_secure) { header.append("; secure"); }
     if(!m_expires.empty()) { header.append("; Expires=" + m_expires); }
 
     return header;
 }
 
-void Cookie::setExpiryDate(int days)
+void Cookie::set_expiry_date(int days)
 {
     std::chrono::time_point<std::chrono::system_clock> e(std::chrono::system_clock::now() + std::chrono::hours(days * 24));
     std::time_t t(std::chrono::system_clock::to_time_t(e));

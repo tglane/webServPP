@@ -23,7 +23,7 @@ public:
         return generator;
     }
 
-    string generateUUID4() {
+    string generate_uuid4() {
         string uuid;
         uuid += generate_hex(4);
         uuid += "-";
@@ -46,7 +46,7 @@ private:
         return dis(gen);
     }
 
-    string generate_hex(const unsigned int len) {
+    static string generate_hex(const unsigned int len) {
         std::stringstream ss;
         for(auto i = 0; i < len; i++) {
             auto r = random_int();

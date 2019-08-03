@@ -10,10 +10,10 @@ void SessionMiddleware::processRequest(Request& req, Response& res)
 {
     try {
         Cookie session_cookie = req.get_cookies().at("_sessid");
-        last_uuid = session_cookie.getValue();
-        c_sessions.at(session_cookie.getValue());
+        last_uuid = session_cookie.get_value();
+        c_sessions.at(session_cookie.get_value());
     } catch(std::out_of_range& e) {
-        last_uuid = UUID4Generator::instance().generateUUID4();
+        last_uuid = UUID4Generator::instance().generate_uuid4();
         c_sessions.emplace(last_uuid, Session("_sessid", last_uuid));
     }
 

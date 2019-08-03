@@ -23,7 +23,7 @@ public:
      * @param code
      * @return string representation of status phrase
      */
-    static string getPhrase(const string& code);
+    static string get_phrase(const string& code);
 
 private:
 

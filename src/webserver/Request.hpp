@@ -36,7 +36,7 @@ public:
 
     map<string, string> get_headers() { return m_headers; }
 
-    std::string get_header(const string &key) { return m_headers.at(key); }
+    std::string get_header(const string &key);
 
     string get_method() { return m_method; }
 
@@ -48,7 +48,7 @@ public:
 
     std::map<string, string> get_params() { return m_params; }
 
-    std::string get_param(const std::string &key) { return m_params.at(key); }
+    std::string get_param(const std::string &key);
 
     std::map<string, Cookie> get_cookies() { return m_cookies; }
 
@@ -70,7 +70,7 @@ private:
      * Constructs cookie objects from a http request header
      * @param cookies http header containing the cookies
      */
-    void parse_cookies(string& cookies);
+    void parse_cookies(const string& cookies);
 
     string m_request;    /// unparsed request
 

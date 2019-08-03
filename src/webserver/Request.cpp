@@ -49,14 +49,44 @@ void Request::parse(char* request)
     /* Parse POST parameters */
     if(m_method == "POST" || m_method == "post")
     {
-        it = m_headers.find("Content-Length");
-        if(it != m_headers.end() && stoi(it->second) != 0)
+        try
         {
-            //char* body = new char[stoi(it->second)];
-            char body[stoi(it->second)]; //TODO Dont know wether this works
-            request_stringstream.read(body, stoi(it->second));
-            this->parse_params(body);
+            int length = stoi(this->get_header("Content-Length"));
+            if(length > 0) {
+                char body[length];
+                request_stringstream.read(body, length);
+                this->parse_params(body);
+            }
         }
+        catch(std::invalid_argument& e)
+        {
+            /* Exception occurs if header "Content-Length" is 0.
+               No exception handling needed */
+        }
+    }
+}
+
+std::string Request::get_header(const string &key)
+{
+    try
+    {
+        return m_headers.at(key);
+    }
+    catch(std::out_of_range& e)
+    {
+        return "";
+    }
+}
+
+std::string Request::get_param(const std::string &key)
+{
+    try
+    {
+        return m_params.at(key);
+    }
+    catch(std::out_of_range& e)
+    {
+        return "";
     }
 }
 
@@ -80,7 +110,6 @@ void Request::parse_requestline(string& requestline)
 
 void Request::parse_params(string&& param_string)
 {
-    //std::cout << param_string << std::endl;
     if(param_string.find('#') == string::npos)
     {
         param_string.append("&");
@@ -102,7 +131,7 @@ void Request::parse_params(string&& param_string)
     }
 }
 
-void Request::parse_cookies(string& cookies)
+void Request::parse_cookies(const string& cookies)
 {
     //std::cout << cookies << std::endl;
     std::istringstream iss(cookies);

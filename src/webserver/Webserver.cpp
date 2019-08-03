@@ -4,6 +4,8 @@
 
 #include "Webserver.hpp"
 
+#include <ctime>
+
 Webserver::Webserver(int port, int queue_size, bool enable_https)
     : reqCheck(), m_secure_socket(AF_INET, "/etc/ssl/certs/cert.pem", "/etc/ssl/private/key.pem"), m_socket(AF_INET)
 {
@@ -19,6 +21,8 @@ Webserver::Webserver(int port, int queue_size, bool enable_https)
         m_socket.bind("0.0.0.0", m_port);
         m_socket.listen(queue_size);
     }
+
+    std::cout << m_socket.get_socket_descriptor() << std::endl;
 }
 
 Webserver::~Webserver()
@@ -57,14 +61,12 @@ void Webserver::serve()
         std::thread t;
         try {
             if (m_enable_https) {
-                //this->handle_connection(std::move(m_secure_socket.accept()));
-
-                t = std::thread(&Webserver::handle_connection, this, std::move(m_secure_socket.accept()));
+                auto connection_socket = m_secure_socket.accept();
+                t = std::thread(&Webserver::handle_connection, this, std::move(connection_socket));
                 t.detach();
             } else {
-                //this->handle_connection(std::move(m_socket.accept()));
-
-                t = std::thread(&Webserver::handle_connection, this, std::move(m_socket.accept()));
+                auto connection_socket = m_socket.accept();
+                t = std::thread(&Webserver::handle_connection, this, std::move(connection_socket));
                 t.detach();
             }
         } catch(socketwrapper::SocketAcceptingException& ex) {
@@ -75,6 +77,8 @@ void Webserver::serve()
 
 void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn)
 {
+    time_t begin = clock();
+
     /* wait until data is available */
     try
     {
@@ -84,14 +88,14 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
     }
     catch(socketwrapper::ReadBytesAvailableException& e) { return; } //TODO ?
 
-    std::cout << "---New Request---" << std::endl;
+    std::cout << "---New Request---conn sock:" << conn->get_socket_descriptor() << std::endl;
 
     std::shared_ptr<Request> req = std::make_shared<Request>();
     auto buffer = conn->read_all();
     req->parse(buffer.get());
     std::shared_ptr<Response> res = std::make_shared<Response>(req);
 
-    if(!reqCheck.checkRequest(*req))
+    if(!reqCheck.check_request(*req))
     {
         //TODO implement this in logging middleware
         res->set_code("400");
@@ -122,7 +126,7 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
         catch(std::invalid_argument& e)
         {
             processed = false;
-            std::cout << e.what() << std::endl;
+            //std::cout << e.what() << std::endl;
         }
     }
 
@@ -137,8 +141,7 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
     if(!processed)
     {
         res->set_code("404");
-        char notFoundBody[] = "<!DOCTYPE html><html><head><title>404 - Not Found</title><body><h1>404 - Not Found</h1></body></html>\r\n";
-        res->set_body(notFoundBody);
+        res->set_body("<!DOCTYPE html><html><head><title>404 - Not Found</title><body><h1>404 - Not Found</h1></body></html>\r\n");
     }
     else
     {
@@ -149,22 +152,14 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
         }
     }
 
-    bool sent = false;
-    try {
-        string connection_type = req->get_headers().at("Connection");
-        if(connection_type.find("keep-alive") != string::npos)
-        {
-            res->add_header("Connection", "keep-alive");
-            this->send_response(*conn, *res);
-            this->handle_connection(std::move(conn));
-            sent = true;
-        }
-    } catch(std::out_of_range& e)
-    {
-        res->add_header("Connection", "close");
-        this->send_response(*conn, *res);
-        conn->close();
-    }
+    res->add_header("Connection", "close");
+    Webserver::send_response(*conn, *res);
+    conn->close();
+
+    /* Measure time for request handling */
+    time_t end = clock();
+    std::cout << "Response-time: " << difftime(end, begin) / CLOCKS_PER_SEC << "\n" << std::endl;
+
 }
 
 void Webserver::send_response(socketwrapper::TCPSocket& conn, Response& response)

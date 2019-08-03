@@ -33,7 +33,7 @@ string Response::create_string()
     //for(auto it = m_cookies.begin(); it != m_cookies.end(); it++)
     for(auto& it : m_cookies) //TODO auto& or auto?
     {
-        response.append(it.second.buildHeader() + "\r\n");
+        response.append(it.second.build_header() + "\r\n");
     }
 
     /* Append all headers to response */
@@ -77,7 +77,6 @@ void Response::set_body_from_template(const string& templateFile, const map<stri
     /* Substitue template file placeholders with the given values */
     Jinja2CppLight::Template aTemplate {htmlTemplate};
 
-    //for(auto it = values.begin(); it != values.end(); it++)
     for(const auto& it : values)
     {
         /* Substitute a string */
@@ -91,7 +90,6 @@ void Response::set_body_from_template(const string& templateFile, const map<stri
         /* Substitute a list of strings */
         try {
             Jinja2CppLight::TupleValue tmp;
-            //for(auto ite = std::get<list<string>>(it.second).begin(); ite != std::get<list<string>>(it.second).end(); ite++)
             for(auto& ite : std::get<list<string>>(it.second))
             {
                 tmp.addValue(ite);
@@ -100,7 +98,7 @@ void Response::set_body_from_template(const string& templateFile, const map<stri
         } catch (const std::bad_variant_access&) {}
     }
 
-    set_body(aTemplate.render());
+    this->set_body(aTemplate.render());
 }
 
 void Response::set_body_from_file(const string &bodyFile)
@@ -123,7 +121,7 @@ void Response::set_body_from_file(const string &bodyFile)
     sstr << ifs.rdbuf();
     string htmlBody(sstr.str());
     c_file_mutex.unlock();
-    set_body(htmlBody);
+    this->set_body(htmlBody);
 }
 
 void Response::set_body(const string& body)
@@ -134,9 +132,8 @@ void Response::set_body(const string& body)
 
 void Response::send_redirect(const string& url)
 {
-    add_header("Location", url);
-    set_code("302");
-    //create_string();
+    this->add_header("Location", url);
+    this->set_code("302");
 }
 
 void Response::add_header(const string& key, const string& value)
@@ -152,12 +149,12 @@ void Response::add_header(const string& key, const string& value)
 
 void Response::add_cookie(Cookie cookie)
 {
-    auto it = m_cookies.find(cookie.getName());
+    auto it = m_cookies.find(cookie.get_name());
     if(it != m_cookies.end())
     {
         it->second = cookie;
     } else {
-        m_cookies.insert(std::pair<string, Cookie>(cookie.getName(), cookie));
+        m_cookies.insert(std::pair<string, Cookie>(cookie.get_name(), cookie));
     }
 }
 
@@ -176,7 +173,7 @@ void Response::set_content_type(const string& contentType)
 
 string Response::get_phrase(const string& code)
 {
-    string codephrase = Statuscodes::getPhrase(code);
+    string codephrase = Statuscodes::get_phrase(code);
     if(codephrase.empty())
     {
         set_code("500");

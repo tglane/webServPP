@@ -30,17 +30,17 @@ public:
      * Creates a string representation of the member fields to set this cookie
      * @return string representation of this cookie
      */
-    string buildHeader();
+    string build_header();
 
-    void setExpiryDate(int days);
+    void set_expiry_date(int days);
 
-    void setHttpOnly(bool value) { m_httpOnly = value; }
+    void set_http_only(bool value) { m_http_only = value; }
 
-    void setSecure(bool value) { m_secure = value; }
+    void set_secure(bool value) { m_secure = value; }
 
-    string getName() { return m_name; }
+    string get_name() { return m_name; }
 
-    string getValue() { return m_value; }
+    string get_value() { return m_value; }
 
 private:
 
@@ -50,7 +50,7 @@ private:
      */
     string m_name;
     string m_value;
-    bool m_httpOnly;
+    bool m_http_only;
     bool m_secure;
     string m_comment;
     string m_domain;

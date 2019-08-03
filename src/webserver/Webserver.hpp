@@ -65,7 +65,12 @@ private:
      */
     void handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn);
 
-    void send_response(socketwrapper::TCPSocket& conn, Response& response);
+    /**
+     * @brief Sends a requested response to a client
+     * @param conn socket connection to client
+     * @param response
+     */
+    static void send_response(socketwrapper::TCPSocket& conn, Response& response);
 
     int m_port;
     bool m_enable_https = false;

@@ -21,13 +21,13 @@ public:
     RequestChecker(const RequestChecker&) = delete;
     void operator=(const RequestChecker&) = delete;
 
-    bool checkRequest(Request& req);
+    bool check_request(Request& req);
 
 private:
 
-    bool checkRequestline(const string& method, const string& resource, const string& protocol);
+    bool check_requestline(const string& method, const string& resource, const string& protocol);
 
-    bool checkHost(Request& req);
+    bool check_host(Request& req);
 
 };
 

@@ -9,7 +9,7 @@ Session::Session(string cookiename, string sessid)
     if(!sessid.empty()) {
         m_sessid = std::move(sessid);
     } else {
-        m_sessid = UUID4Generator::instance().generateUUID4();
+        m_sessid = UUID4Generator::instance().generate_uuid4();
     }
     m_cookiename = std::move(cookiename);
 }
@@ -30,6 +30,6 @@ string Session::getDataItem(const string &key)
 
 void Session::renewSession()
 {
-    m_sessid = UUID4Generator::instance().generateUUID4();
+    m_sessid = UUID4Generator::instance().generate_uuid4();
     m_data.clear();
 }

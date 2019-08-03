@@ -27,7 +27,7 @@ void TestApp::showTemplate(Request& req, Response& res)
     list<string> l{"Hallo", "dies", "ist", "ein", "Test", "der", "Template-Enginge", "!"};
 
     res.set_body_from_template("test.tmpl.html",
-                               map<string, std::variant<string, int, list<string>>>{{"headline", "Ja moin"},
+                               map<string, std::variant<string, int, list<string>>> {{"headline", "Ja moin"},
                                                                                     {"text",     "löl hier ist ja jz doch was xD"},
                                                                                     {"its",      l},
                                                                                     {"it",       4}});
