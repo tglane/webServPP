@@ -1,4 +1,4 @@
-A simple HTTP Webserver for Linux implemented in C++11
+A simple HTTP Webserver for Linux implemented in C++17
 
 ---Requirements---
 Need to install libsocketwrapper.so for the socket communication.
