@@ -4,12 +4,12 @@
 
 #include "TestApp.hpp"
 
-void TestApp::registerRoutes()
+void TestApp::register_routes()
 {
-    addRoute("/test/normal", std::bind(&TestApp::show, this, std::placeholders::_1, std::placeholders::_2));
-    addRoute("/test/redirect", std::bind(&TestApp::showRedirect, this, std::placeholders::_1, std::placeholders::_2));
-    addRoute("/test", std::bind(&TestApp::showTemplate, this, std::placeholders::_1, std::placeholders::_2));
-    addRoute("/test/ajax", std::bind(&TestApp::ajaxTest, this, std::placeholders::_1, std::placeholders::_2));
+    add_route("/test/normal", std::bind(&TestApp::show, this, std::placeholders::_1, std::placeholders::_2));
+    add_route("/test/redirect", std::bind(&TestApp::showRedirect, this, std::placeholders::_1, std::placeholders::_2));
+    add_route("/test", std::bind(&TestApp::showTemplate, this, std::placeholders::_1, std::placeholders::_2));
+    add_route("/test/ajax", std::bind(&TestApp::ajaxTest, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 void TestApp::show(Request& req, Response& res)
@@ -24,13 +24,13 @@ void TestApp::showRedirect(Request& req, Response& res)
 
 void TestApp::showTemplate(Request& req, Response& res)
 {
-    list<string> l{"Hallo", "dies", "ist", "ein", "Test", "der", "Template-Enginge", "!"};
+    list<std::string> l {"Hallo", "dies", "ist", "ein", "Test", "der", "Template-Enginge", "!"};
 
     res.set_body_from_template("test.tmpl.html",
-                               map<string, std::variant<string, int, list<string>>> {{"headline", "Ja moin"},
-                                                                                    {"text",     "löl hier ist ja jz doch was xD"},
-                                                                                    {"its",      l},
-                                                                                    {"it",       4}});
+                               std::map<std::string, std::variant<string, int, list<std::string>>> {{"headline", "Ja moin"},
+                                                                                                        {"text",     "löl hier ist ja jz doch was xD"},
+                                                                                                        {"its",      l},
+                                                                                                        {"it",       4}});
 }
 
 void TestApp::ajaxTest(Request& req, Response& res)

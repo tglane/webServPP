@@ -6,10 +6,11 @@
 #define CPPWEBSERVER_TESTAPP_HPP
 
 #include "App.hpp"
+#include "../AuthenticationService.hpp"
 
 class TestApp : public App {
 
-    void registerRoutes() override;
+    void register_routes() override;
 
     void show(Request& req, Response& res);
 

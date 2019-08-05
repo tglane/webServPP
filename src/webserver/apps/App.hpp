@@ -13,9 +13,6 @@
 #include "../Response.hpp"
 #include "../Request.hpp"
 
-using std::map;
-using std::string;
-
 class Webserver;
 
 /**
@@ -26,32 +23,32 @@ class App {
 
 public:
 
-    /// Constructor
-    explicit App() = default;
-
     /**
      * Needs to be implemented by all Apps
      * Call addRoute with all routes to add from this method
      */
-    virtual void registerRoutes() = 0;
+    virtual void register_routes() = 0;
 
     /**
      * Searches in m_routes for the given route and executes the handler to the route
      * @param route
      * @return true if a route was found, false else
      */
-    bool getCallback(string route, Request& req, Response& res);
+    bool get_callback(std::string route, Request& req, Response& res);
 
 protected:
+
+    /// Protected default constructor to avoid instances of App
+    explicit App() = default;
 
     /**
      * Adds a given route and its callback method to m_routes
      * @param route string representing the http route
      * @param handler callback method for the route -> must be implemented by the app!
      */
-    void addRoute(string route, std::function<void(Request&, Response&)>);
+    void add_route(std::string route, const std::function<void(Request&, Response&)>& handler);
 
-    map<string, std::function<void(Request&, Response&)>> m_routes; /// key = route path; value = handler function
+    std::map<std::string, std::function<void(Request&, Response&)>> m_routes; /// key = route path; value = handler function
 
 };
 

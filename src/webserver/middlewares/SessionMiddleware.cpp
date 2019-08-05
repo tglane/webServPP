@@ -4,22 +4,22 @@
 
 #include "SessionMiddleware.hpp"
 
-map<string, Session> SessionMiddleware::c_sessions;
+std::map<std::string, Session> SessionMiddleware::_sessions;
 
-void SessionMiddleware::processRequest(Request& req, Response& res)
+void SessionMiddleware::process_request(Request& req, Response& res)
 {
     try {
         Cookie session_cookie = req.get_cookies().at("_sessid");
         last_uuid = session_cookie.get_value();
-        c_sessions.at(session_cookie.get_value());
+        _sessions.at(session_cookie.get_value());
     } catch(std::out_of_range& e) {
         last_uuid = UUID4Generator::instance().generate_uuid4();
-        c_sessions.emplace(last_uuid, Session("_sessid", last_uuid));
+        _sessions.emplace(last_uuid, Session("_sessid", last_uuid));
     }
 
 }
 
-void SessionMiddleware::processResponse(Response& res)
+void SessionMiddleware::process_response(Request& req, Response& res)
 {
     /**if(!m_last_session.isEmpty()) {
         res.addCookie(m_last_session.makeCookie());
@@ -28,8 +28,8 @@ void SessionMiddleware::processResponse(Response& res)
     }*/
 
     try {
-        c_sessions.at(last_uuid);
-        res.add_cookie(c_sessions.at(last_uuid).makeCookie());
+        _sessions.at(last_uuid);
+        res.add_cookie(_sessions.at(last_uuid).make_cookie());
     } catch(std::out_of_range& e) {
 
     }

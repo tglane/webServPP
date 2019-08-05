@@ -11,9 +11,6 @@
 #include "../Session.hpp"
 #include "../Cookie.hpp"
 
-using std::map;
-using std::string;
-
 /**
  * @brief Checks for Session Cookies in incoming requests and puts them into the outgoing response
  */
@@ -21,15 +18,15 @@ class SessionMiddleware : public Middleware {
 
 public:
 
-    void processRequest(Request& req, Response& res) override;
+    void process_request(Request& req, Response& res) override;
 
-    void processResponse(Response& res) override;
+    void process_response(Request& req, Response& res) override;
 
 private:
 
-    string last_uuid;
+    std::string last_uuid;
 
-    static map<string, Session> c_sessions;
+    static std::map<std::string, Session> _sessions;
 
 };
 

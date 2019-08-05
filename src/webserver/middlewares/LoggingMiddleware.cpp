@@ -5,12 +5,12 @@
 #include <iostream>
 #include "LoggingMiddleware.hpp"
 
-void LoggingMiddleware::processRequest(Request& req, Response& res)
+void LoggingMiddleware::process_request(Request& req, Response& res)
 {
 
 }
 
-void LoggingMiddleware::processResponse(Response& res)
+void LoggingMiddleware::process_response(Request& req, Response& res)
 {
 
 }

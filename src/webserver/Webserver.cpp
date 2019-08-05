@@ -32,7 +32,7 @@ Webserver::~Webserver()
 
 void Webserver::add_app(std::unique_ptr<App> app)
 {
-    app->registerRoutes();
+    app->register_routes();
     m_apps.push_back(std::move(app));
 }
 
@@ -113,7 +113,7 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
     /* Process request from all registered middlewares */
     for(auto& it : m_middlewares)
     {
-        it->processRequest(*req, *res);
+        it->process_request(*req, *res);
     }
 
     /* Try to process the called route from a registered app, css file or javascript file */
@@ -137,7 +137,7 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
     {
         for(auto it = m_apps.begin(); it != m_apps.end(); it++)
         {
-            if((*it)->getCallback(path, *req, *res))
+            if((*it)->get_callback(path, *req, *res))
             {
                 processed = true;
             }
@@ -154,7 +154,7 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
         /* If route was processed process response from registered middlewares */
         for(auto& it : m_middlewares)
         {
-            it->processResponse(*res);
+            it->process_response(*req, *res);
         }
     }
 

@@ -12,6 +12,7 @@ set(SOURCES
         src/webserver/Webserver.cpp
         src/webserver/middlewares/SessionMiddleware.cpp
         src/webserver/middlewares/LoggingMiddleware.cpp
+        src/webserver/AuthenticationService.cpp
         src/webserver/Request.cpp
         src/webserver/Response.cpp
         src/webserver/Cookie.cpp
@@ -19,7 +20,7 @@ set(SOURCES
         src/main.cpp
 
         src/webserver/apps/TestApp.cpp
-   )
+)
 
 find_package(Threads)
 
