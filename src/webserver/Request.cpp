@@ -7,13 +7,13 @@
 
 void Request::parse(char* request)
 {
-    m_request = string(request);
+    m_request = std::string(request);
     std::cout << m_request << std::endl;
     //TODO: log the request using the logging middleware - to be implemented
 
     /* extract the request line */
     std::istringstream request_stringstream {m_request};
-    string request_line;
+    std::string request_line;
     getline(request_stringstream, request_line);
     this->parse_requestline(request_line);
 
@@ -31,12 +31,12 @@ void Request::parse(char* request)
     }
 
     /* Read and parse request headers */
-    string headerline;
+    std::string headerline;
     while(getline(request_stringstream, headerline) && headerline != "\r")
     {
         size_t pos = headerline.find(':');
         if(pos != string::npos) {
-            m_headers.insert(std::pair<string, string>(headerline.substr(0, pos), headerline.substr(pos+2)));
+            m_headers.insert(std::pair<std::string, std::string>(headerline.substr(0, pos), headerline.substr(pos+2)));
         }
     }
 
@@ -67,7 +67,7 @@ void Request::parse(char* request)
     }
 }
 
-std::string Request::get_header(const string &key)
+std::string Request::get_header(const std::string &key)
 {
     try
     {
@@ -103,7 +103,7 @@ Cookie Request::get_cookie(const std::string &cookie_name)
     }
 }
 
-const void Request::parse_requestline(const string& requestline)
+void Request::parse_requestline(const string& requestline)
 {
     std::istringstream iss(requestline);
     std::vector<string> requestline_split((std::istream_iterator<string>(iss)),

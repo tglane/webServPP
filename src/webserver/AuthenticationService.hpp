@@ -9,17 +9,35 @@
 #include "Response.hpp"
 #include <string>
 
+struct Result {
+    enum _result_code { SUCCESS, FAILURE, IDENTITY_NOT_FOUND };
+
+    Result(int code, std::string identity)
+        : m_code {code}, m_identiy {std::move(identity)} {}
+
+    int get_code() { return m_code; }
+
+private:
+    int m_code;
+    std::string m_identiy;
+};
+
+/**
+ * @brief Abstract authentication adapter implemented by authenticator classes which provide stored user identifier and passwords
+ */
 class AuthenticationAdapter {
 
 public:
 
-
+    /**
+     * @brief authenticates a user by comparing his identifier and password hash with login data provided by an implementation of this class
+     * @return Result of authentication process
+     */
+    virtual Result authenticate_user(const std::string& identifier, size_t password_hash) = 0;
 
 protected:
 
     AuthenticationAdapter()  = default;
-
-private:
 
 };
 
@@ -45,7 +63,9 @@ public:
      * @param password string with password to check
      * @return bool
      */
-    bool authenticate(const std::string& identifier, const std::string& password);
+    Result authenticate(const std::string& identifier, const std::string& password, AuthenticationAdapter& auth);
+
+    Result authenticate(const std::string& identifier, size_t password_hash, AuthenticationAdapter& auth);
 
 private:
 

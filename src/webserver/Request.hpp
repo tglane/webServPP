@@ -15,9 +15,6 @@
 
 #include "Cookie.hpp"
 
-using std::string;
-using std::map;
-
 /**
  * @brief Class representing a http request
  * Stores data of a http request in member variables
@@ -34,23 +31,23 @@ public:
      */
     void parse(char* request);
 
-    map<string, string> get_headers() { return m_headers; }
+    std::map<std::string, std::string> get_headers() { return m_headers; }
 
     std::string get_header(const string &key);
 
-    string get_method() { return m_method; }
+    std::string get_method() { return m_method; }
 
-    string get_resource() { return m_resource; }
+    std::string get_resource() { return m_resource; }
 
-    string get_protocol() { return m_protocol; }
+    std::string get_protocol() { return m_protocol; }
 
-    string get_path() { return m_path; }
+    std::string get_path() { return m_path; }
 
     std::map<std::string, std::string> get_params() { return m_params; }
 
     std::string get_param(const std::string &key);
 
-    std::map<string, Cookie> get_cookies() { return m_cookies; }
+    std::map<std::string, Cookie> get_cookies() { return m_cookies; }
 
     Cookie get_cookie(const std::string& cookie_name);
 
@@ -60,13 +57,13 @@ private:
      * Parses a http request line and stores the parameters in member variables
      * @param requestline String that contains a http request line
      */
-    const void parse_requestline(const string& requestline);
+    void parse_requestline(const std::string& requestline);
 
     /**
      * Parses the query string into map m_params
      * @param param_string
      */
-    void parse_params(string&& param_string);
+    void parse_params(std::string&& param_string);
 
     /**
      * Constructs cookie objects from a http request header
