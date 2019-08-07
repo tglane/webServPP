@@ -90,8 +90,6 @@ std::string Request::create_string()
     return request;
 }
 
-
-
 Cookie Request::get_cookie(const std::string &cookie_name)
 {
     try
