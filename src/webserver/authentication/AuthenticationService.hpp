@@ -5,8 +5,8 @@
 #ifndef WEBSERV_PP_AUTHENTICATIONSERVICE_HPP
 #define WEBSERV_PP_AUTHENTICATIONSERVICE_HPP
 
-#include "Request.hpp"
-#include "Response.hpp"
+#include "../Request.hpp"
+#include "../Response.hpp"
 #include <string>
 
 struct Result {

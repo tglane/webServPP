@@ -6,7 +6,7 @@
 #define CPPWEBSERVER_TESTAPP_HPP
 
 #include "App.hpp"
-#include "../AuthenticationService.hpp"
+#include "../authentication/AuthenticationService.hpp"
 
 class TestApp : public App {
 

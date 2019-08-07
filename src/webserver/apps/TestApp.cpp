@@ -36,7 +36,6 @@ void TestApp::showTemplate(Request& req, Response& res)
 void TestApp::ajaxTest(Request& req, Response& res)
 {
     if(req.get_method() == "POST") {
-        res.set_body("<div id=\"messages\"><div>" + req.get_params().at("new_text") + "</div><br>" +
-                     req.get_params().at("old_text") + "</div>");
+        res.set_body(req.get_post_param("new_text"));
     }
 }

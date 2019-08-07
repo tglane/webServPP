@@ -3,13 +3,10 @@
 //
 
 #include "Request.hpp"
-#include <iostream>
 
-void Request::parse(char* request)
+void Request::parse(const char* request)
 {
     m_request = std::string(request);
-    std::cout << m_request << std::endl;
-    //TODO: log the request using the logging middleware - to be implemented
 
     /* extract the request line */
     std::istringstream request_stringstream {m_request};
@@ -27,7 +24,7 @@ void Request::parse(char* request)
     {
         m_path = m_resource.substr(0, pos_q);
         std::string param_string {m_resource.substr(pos_q + 1)};
-        this->parse_params(m_resource.substr(pos_q + 1));
+        this->parse_params(m_resource.substr(pos_q + 1), m_query_params);
     }
 
     /* Read and parse request headers */
@@ -56,7 +53,7 @@ void Request::parse(char* request)
             if(length > 0) {
                 char body[length];
                 request_stringstream.read(body, length);
-                this->parse_params(body);
+                this->parse_params(body, m_body_params);
             }
         }
         catch(std::invalid_argument& e)
@@ -67,29 +64,33 @@ void Request::parse(char* request)
     }
 }
 
-std::string Request::get_header(const std::string &key)
+std::string Request::create_string()
 {
-    try
+    std::string request {m_method + " "};
+    (request += m_path) += "?";
+    for(const auto& it : m_query_params)
     {
-        return m_headers.at(key);
+        (((request += it.first) += "=") += it.second) += "&";
     }
-    catch(std::out_of_range& e)
+    request.pop_back();
+    //TODO append fragment to headerline (#...)
+    request += " HTTP/1.1\r\n";
+
+    for(const auto& it : m_headers)
     {
-        return "";
+        (((request += it.first) += ": ") += it.second) += "\r\n";
     }
+    request += "\r\n";
+    for(const auto& it : m_body_params)
+    {
+        (((request += it.first) += "=") += it.second) += "&";
+    }
+    request.pop_back();
+
+    return request;
 }
 
-std::string Request::get_param(const std::string &key)
-{
-    try
-    {
-        return m_params.at(key);
-    }
-    catch(std::out_of_range& e)
-    {
-        return "";
-    }
-}
+
 
 Cookie Request::get_cookie(const std::string &cookie_name)
 {
@@ -121,7 +122,7 @@ void Request::parse_requestline(const string& requestline)
     }
 }
 
-void Request::parse_params(string&& param_string)
+void Request::parse_params(string&& param_string, std::map<std::string, std::string>& param_container)
 {
     if(param_string.find('#') == string::npos)
     {
@@ -139,7 +140,7 @@ void Request::parse_params(string&& param_string)
             size_t pos = param.find('=');
             std::pair<string, string> p(param.substr(0,pos), param.substr(pos + 1));
             //std::cout << p.first << " | " << p.second << std::endl;
-            m_params.insert(p);
+            param_container.insert(p);
         }
     }
 }
@@ -161,5 +162,17 @@ void Request::parse_cookies(const string& cookies)
         size_t pos = it.find('=');
         Cookie c(it.substr(0, pos), it.substr(pos + 1));
         m_cookies.insert(std::pair<string, Cookie>(it.substr(0, pos), c));
+    }
+}
+
+std::string Request::get_from_map(const std::map<std::string, std::string>& container, const std::string &key)
+{
+    try
+    {
+        return container.at(key);
+    }
+    catch(std::out_of_range& e)
+    {
+        return "";
     }
 }

@@ -81,7 +81,7 @@ void Webserver::serve()
 
 void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn)
 {
-    time_t begin = clock();
+    time_t begin = clock(); //TODO remove when finished
 
     /* wait until data is available */
     try
@@ -94,8 +94,8 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
 
     std::cout << "---New Request---conn sock:" << conn->get_socket_descriptor() << std::endl;
 
-    std::shared_ptr<Request> req = std::make_shared<Request>();
-    req->parse(conn->read_all().get());
+    std::shared_ptr<Request> req = std::make_shared<Request>(conn->read_all().get());
+    std::cout << req->create_string() << std::endl; //TODO remove
     std::shared_ptr<Response> res = std::make_shared<Response>(req);
 
     if(!reqCheck.check_request(*req))
@@ -163,7 +163,7 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
     Webserver::send_response(*conn, *res);
     conn->close();
 
-    /* Measure time for request handling */
+    /* TODO remove when finished. Measure time for request handling */
     time_t end = clock();
     std::cout << "Response-time: " << difftime(end, begin) / CLOCKS_PER_SEC << "\n" << std::endl;
 

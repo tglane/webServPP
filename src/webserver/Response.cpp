@@ -30,14 +30,12 @@ string Response::create_string()
     response.append("HTTP/1.1 " + m_code + " " + get_phrase(m_code) + "\r\n" + "Date: " + std::ctime(&now));
 
     /* Append all cookies to response */
-    //for(auto it = m_cookies.begin(); it != m_cookies.end(); it++)
     for(auto& it : m_cookies) //TODO auto& or auto?
     {
         response.append(it.second.build_header() + "\r\n");
     }
 
     /* Append all headers to response */
-    //for(auto it = m_headers.begin(); it != m_headers.end(); it++)
     for(auto& it : m_headers) //TODO auto& or auto
     {
         response.append(it.first + ": " + it.second + "\r\n");
