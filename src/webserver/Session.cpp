@@ -9,9 +9,12 @@ namespace webserv
 
 Session::Session(std::string cookiename, std::string sessid)
 {
-    if(!sessid.empty()) {
+    if(!sessid.empty())
+    {
         m_sessid = std::move(sessid);
-    } else {
+    }
+    else
+    {
         m_sessid = UUID4Generator::instance().generate_uuid4();
     }
     m_cookiename = std::move(cookiename);
@@ -36,9 +39,12 @@ void Session::destroy_session()
 
 string Session::getDataItem(const std::string &key)
 {
-    try {
+    try
+    {
         return m_data.at(key);
-    } catch(std::out_of_range& e) {
+    }
+    catch(std::out_of_range& e)
+    {
         return "";
     }
 }
