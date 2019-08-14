@@ -4,6 +4,9 @@
 
 #include "App.hpp"
 
+namespace webserv
+{
+
 void App::add_route(std::string route, const std::function<void(Request& req, Response& res)>& handler)
 {
     if(route.front() != '/')
@@ -31,4 +34,6 @@ bool App::get_callback(std::string route, Request& req, Response& res)
         return true;
     }
     else return false;
+}
+
 }

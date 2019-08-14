@@ -8,6 +8,9 @@
 #include "../Request.hpp"
 #include "../Response.hpp"
 
+namespace webserv
+{
+
 /**
  * Abstract class for the implementation of middelwares called from the webservers main loop
  */
@@ -30,5 +33,6 @@ public:
 
 };
 
+}
 
 #endif //CPPWEBSERVER_MIDDELWARE_HPP

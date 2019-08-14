@@ -4,6 +4,9 @@
 
 #include "Request.hpp"
 
+namespace webserv
+{
+
 void Request::parse(const char* request)
 {
     m_request = std::string(request);
@@ -24,7 +27,7 @@ void Request::parse(const char* request)
     {
         m_path = m_resource.substr(0, pos_q);
         std::string param_string {m_resource.substr(pos_q + 1)};
-        this->parse_params(m_resource.substr(pos_q + 1), m_query_params);
+        Request::parse_params(m_resource.substr(pos_q + 1), m_query_params);
     }
 
     /* Read and parse request headers */
@@ -53,7 +56,7 @@ void Request::parse(const char* request)
             if(length > 0) {
                 char body[length];
                 request_stringstream.read(body, length);
-                this->parse_params(body, m_body_params);
+                Request::parse_params(body, m_body_params);
             }
         }
         catch(std::invalid_argument& e)
@@ -134,10 +137,8 @@ void Request::parse_params(string&& param_string, std::map<std::string, std::str
         {
             string param = param_string.substr((size_t) tmp, (size_t) (i-tmp));
             tmp = i + 1;
-            //std::cout << param << std::endl;
             size_t pos = param.find('=');
             std::pair<string, string> p(param.substr(0,pos), param.substr(pos + 1));
-            //std::cout << p.first << " | " << p.second << std::endl;
             param_container.insert(p);
         }
     }
@@ -145,12 +146,10 @@ void Request::parse_params(string&& param_string, std::map<std::string, std::str
 
 void Request::parse_cookies(const string& cookies)
 {
-    //std::cout << cookies << std::endl;
     std::istringstream iss(cookies);
     std::vector<string> cookies_split((std::istream_iterator<string>(iss)),
                                           std::istream_iterator<string>());
 
-    //for(auto it = cookies_split.begin(); it != cookies_split.end(); it++)
     for(auto& it : cookies_split)
     {
         if(it.find(';') != string::npos)
@@ -173,4 +172,6 @@ std::string Request::get_from_map(const std::map<std::string, std::string>& cont
     {
         return "";
     }
+}
+
 }

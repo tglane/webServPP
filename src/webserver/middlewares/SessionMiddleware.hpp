@@ -11,6 +11,9 @@
 #include "../Session.hpp"
 #include "../Cookie.hpp"
 
+namespace webserv
+{
+
 /**
  * @brief Checks for Session Cookies in incoming requests and puts them into the outgoing response
  */
@@ -30,5 +33,6 @@ private:
 
 };
 
+}
 
 #endif //WEBSERV_PP_SESSIONMIDDLEWARE_HPP

@@ -4,6 +4,9 @@
 
 #include "AuthenticationService.hpp"
 
+namespace webserv
+{
+
 AuthenticationService& AuthenticationService::get_instance()
 {
     static AuthenticationService auth;
@@ -19,4 +22,6 @@ Result AuthenticationService::authenticate(const std::string &identifier, const 
 Result AuthenticationService::authenticate(const std::string &identifier, size_t password_hash, AuthenticationAdapter& auth)
 {
     return auth.authenticate_user(identifier, password_hash);
+}
+
 }

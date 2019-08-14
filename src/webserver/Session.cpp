@@ -4,6 +4,9 @@
 
 #include "Session.hpp"
 
+namespace webserv
+{
+
 Session::Session(std::string cookiename, std::string sessid)
 {
     if(!sessid.empty()) {
@@ -38,4 +41,6 @@ string Session::getDataItem(const std::string &key)
     } catch(std::out_of_range& e) {
         return "";
     }
+}
+
 }

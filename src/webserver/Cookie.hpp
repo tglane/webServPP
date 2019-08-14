@@ -12,6 +12,9 @@
 #include <iostream>
 #include <ctime>
 
+namespace webserv
+{
+
 using std::string;
 
 /**
@@ -60,5 +63,6 @@ private:
 
 };
 
+}
 
 #endif //CPPWEBSERVER_COOKIE_HPP

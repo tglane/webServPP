@@ -8,6 +8,9 @@
 #include <map>
 #include <string>
 
+namespace webserv
+{
+
 /**
  * @brief Container class for http status phrases
  */
@@ -37,5 +40,6 @@ private:
 
 };
 
+}
 
 #endif //CPPWEBSERVER_STATUSCODES_HPP

@@ -9,6 +9,9 @@
 #include "../Response.hpp"
 #include <string>
 
+namespace webserv
+{
+
 struct Result {
     enum _result_code { SUCCESS, FAILURE, IDENTITY_NOT_FOUND };
 
@@ -74,5 +77,6 @@ private:
 
 };
 
+}
 
 #endif //WEBSERV_PP_AUTHENTICATIONSERVICE_HPP

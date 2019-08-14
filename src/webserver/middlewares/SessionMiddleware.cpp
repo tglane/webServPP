@@ -4,6 +4,9 @@
 
 #include "SessionMiddleware.hpp"
 
+namespace webserv
+{
+
 std::map<std::string, Session> SessionMiddleware::_sessions;
 
 void SessionMiddleware::process_request(Request& req, Response& res)
@@ -33,4 +36,6 @@ void SessionMiddleware::process_response(Request& req, Response& res)
     } catch(std::out_of_range& e) {
 
     }
+}
+
 }

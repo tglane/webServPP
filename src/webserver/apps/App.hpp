@@ -13,6 +13,9 @@
 #include "../Response.hpp"
 #include "../Request.hpp"
 
+namespace webserv
+{
+
 class Webserver;
 
 /**
@@ -51,5 +54,7 @@ protected:
     std::map<std::string, std::function<void(Request&, Response&)>> m_routes; /// key = route path; value = handler function
 
 };
+
+}
 
 #endif //CPPWEBSERVER_APP_HPP

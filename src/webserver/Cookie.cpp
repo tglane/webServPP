@@ -4,6 +4,9 @@
 
 #include "Cookie.hpp"
 
+namespace webserv
+{
+
 Cookie::Cookie(string name, string value, bool httpOnly, bool secure, string comment, string domain, string max_age,
                string path, int expires)
 {
@@ -38,4 +41,6 @@ void Cookie::set_expiry_date(int days)
     std::chrono::time_point<std::chrono::system_clock> e(std::chrono::system_clock::now() + std::chrono::hours(days * 24));
     std::time_t t(std::chrono::system_clock::to_time_t(e));
     m_expires = std::ctime(&t);
+}
+
 }

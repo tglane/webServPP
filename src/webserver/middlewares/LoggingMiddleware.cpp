@@ -5,6 +5,9 @@
 #include <iostream>
 #include "LoggingMiddleware.hpp"
 
+namespace webserv
+{
+
 void LoggingMiddleware::process_request(Request& req, Response& res)
 {
 
@@ -12,5 +15,7 @@ void LoggingMiddleware::process_request(Request& req, Response& res)
 
 void LoggingMiddleware::process_response(Request& req, Response& res)
 {
+
+}
 
 }

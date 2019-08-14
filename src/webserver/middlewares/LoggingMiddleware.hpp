@@ -7,6 +7,9 @@
 
 #include "Middleware.hpp"
 
+namespace webserv
+{
+
 /**
  * @brief Middleware to log information of incoming requests and generated responses to the console
  */
@@ -19,5 +22,7 @@ public:
     void process_response(Request& req, Response& res) override;
 
 };
+
+}
 
 #endif //CPPWEBSERVER_LOGGINGMIDDLEWARE_HPP

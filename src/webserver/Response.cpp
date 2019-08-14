@@ -9,6 +9,9 @@
 
 #include "Response.hpp"
 
+namespace webserv
+{
+
 std::mutex Response::c_file_mutex;
 
 string Response::create_string()
@@ -178,4 +181,6 @@ string Response::get_phrase(const string& code)
         return "Unknown statuscode requested in code";
     }
     return codephrase;
+}
+
 }

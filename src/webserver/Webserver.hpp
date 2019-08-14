@@ -18,11 +18,13 @@
 #include "apps/App.hpp"
 #include "middlewares/Middleware.hpp"
 
+namespace webserv {
+
 using std::list;
 
 /**
- * @brief Simple Webserver that parses a http request and generates a response
- */
+* @brief Simple Webserver that parses a http request and generates a response
+*/
 class Webserver {
 
 public:
@@ -70,7 +72,7 @@ private:
      * @param conn socket connection to client
      * @param response
      */
-    static void send_response(socketwrapper::TCPSocket& conn, Response& response);
+    static void send_response(socketwrapper::TCPSocket &conn, Response &response);
 
     int m_port;
     bool m_enable_https = false;
@@ -85,5 +87,7 @@ private:
     RequestChecker reqCheck;
 
 };
+
+}
 
 #endif //CPPWEBSERVER_WEBSERVER_HPP

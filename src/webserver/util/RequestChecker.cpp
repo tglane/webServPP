@@ -4,6 +4,9 @@
 
 #include "RequestChecker.hpp"
 
+namespace webserv
+{
+
 //TODO add more checks
 bool RequestChecker::check_request(Request& req)
 {
@@ -42,4 +45,6 @@ bool RequestChecker::check_host(Request &req)
     } catch(std::out_of_range& e) {
         return false;
     }
+}
+
 }

@@ -8,17 +8,17 @@
 #include "App.hpp"
 #include "../authentication/AuthenticationService.hpp"
 
-class TestApp : public App {
+class TestApp : public webserv::App {
 
     void register_routes() override;
 
-    void show(Request& req, Response& res);
+    void show(webserv::Request& req, webserv::Response& res);
 
-    void showRedirect(Request& req, Response& res);
+    void showRedirect(webserv::Request& req, webserv::Response& res);
 
-    void showTemplate(Request& req, Response& res);
+    void showTemplate(webserv::Request& req, webserv::Response& res);
 
-    void ajaxTest(Request& req, Response& res);
+    void ajaxTest(webserv::Request& req, webserv::Response& res);
 
 };
 

@@ -8,6 +8,9 @@
 #include <regex>
 #include "../Request.hpp"
 
+namespace webserv
+{
+
 /**
  * @brief Checks a given http request for validity
  * Implemented as singleton > use getInstance() to create/get an instance of this class
@@ -31,5 +34,6 @@ private:
 
 };
 
+}
 
 #endif //CPPWEBSERVER_REQUESTCHECKER_HPP

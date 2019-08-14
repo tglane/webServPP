@@ -4,6 +4,9 @@
 
 #include "Statuscodes.hpp"
 
+namespace webserv
+{
+
 std::map<int, std::string> Statuscodes::_codes = {
         /* 1xx - Information */
         {100, "Continue"},
@@ -120,4 +123,6 @@ const std::string Statuscodes::get_mime_type(const std::string& file_extension)
     {
         return "";
     }
+}
+
 }

@@ -11,10 +11,12 @@
 #include "util/UUID4Generator.hpp"
 #include "Cookie.hpp"
 
+namespace webserv {
+
 /**
- * @brief Representation of a HTTP Session Cookie
- * Using UUID4 for generating session IDs
- */
+* @brief Representation of a HTTP Session Cookie
+* Using UUID4 for generating session IDs
+*/
 class Session {
 
 public:
@@ -50,7 +52,7 @@ public:
      * @param key
      * @return string containing the data element
      */
-    std::string getDataItem(const std::string& key);
+    std::string getDataItem(const std::string &key);
 
     /**
      * @brief Returns the complete map containing the session data
@@ -65,5 +67,7 @@ private:
     std::map<std::string, std::string> m_data;    /// Stores the session data
 
 };
+
+}
 
 #endif //WEBSERV_PP_SESSION_HPP

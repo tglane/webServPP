@@ -12,6 +12,9 @@
 #include <functional>
 #include <string>
 
+namespace webserv
+{
+
 using std::string;
 
 class UUID4Generator {
@@ -59,5 +62,7 @@ private:
     }
 
 };
+
+}
 
 #endif //WEBSERV_PP_UUID4GENERATOR_HPP
