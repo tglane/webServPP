@@ -10,7 +10,10 @@
 
 class TestApp : public webserv::App {
 
-    void register_routes() override;
+public:
+
+    TestApp();
+    //void register_routes(webserv::CallbackHandler& handler) override;
 
     void show(webserv::Request& req, webserv::Response& res);
 

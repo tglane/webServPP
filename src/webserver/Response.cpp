@@ -131,7 +131,7 @@ void Response::set_body(const string& body)
     add_header("Content-Length", std::to_string(m_body.size()));
 }
 
-void Response::send_redirect(const string& url)
+void Response::set_redirect(const string& url)
 {
     this->add_header("Location", url);
     this->set_code("302");

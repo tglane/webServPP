@@ -14,6 +14,7 @@
 
 #include "Request.hpp"
 #include "Response.hpp"
+#include "CallbackHandler.hpp"
 #include "util/RequestChecker.hpp"
 #include "apps/App.hpp"
 #include "middlewares/Middleware.hpp"
@@ -46,6 +47,13 @@ public:
      * @param app
      */
     void add_app(std::unique_ptr<App> app);
+
+    /**
+     * Directly adds a route and a callback function to the callback handler
+     * @param route
+     * @param callback_function
+     */
+    void add_route(const string& route, const std::function<void (Request&, Response&)>& callback_function);
 
     /**
      * Adds a given middelware to m_middelwares to call processRequest() and processResponse()
@@ -85,6 +93,8 @@ private:
     list<std::unique_ptr<Middleware>> m_middlewares; /// List with registered Middelwares
 
     RequestChecker reqCheck;
+
+    CallbackHandler m_callback_handler;
 
 };
 

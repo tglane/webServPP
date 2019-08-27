@@ -59,7 +59,7 @@ public:
      * @brief Adds header Location: url, sets status to 302 and calls method send() to send a redirect to url
      * @param url to redirect to
      */
-    void send_redirect(const string &url);
+    void set_redirect(const string &url);
 
     /**
      * Adds a header to m_headers with key: value for the response

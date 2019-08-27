@@ -12,6 +12,7 @@
 
 #include "../Response.hpp"
 #include "../Request.hpp"
+#include "../CallbackHandler.hpp"
 
 namespace webserv
 {
@@ -27,17 +28,10 @@ class App {
 public:
 
     /**
-     * Needs to be implemented by all Apps
-     * Call addRoute with all routes to add from this method
+     * Registers all routes and its callback function
+     * @param handler callback function handler
      */
-    virtual void register_routes() = 0;
-
-    /**
-     * Searches in m_routes for the given route and executes the handler to the route
-     * @param route
-     * @return true if a route was found, false else
-     */
-    bool get_callback(std::string route, Request& req, Response& res);
+    void register_routes(webserv::CallbackHandler& handler);
 
 protected:
 
@@ -49,7 +43,7 @@ protected:
      * @param route string representing the http route
      * @param handler callback method for the route -> must be implemented by the app!
      */
-    void add_route(std::string route, const std::function<void(Request&, Response&)>& handler);
+    //void add_route(std::string route, const std::function<void(Request&, Response&)>& handler);
 
     std::map<std::string, std::function<void(Request&, Response&)>> m_routes; /// key = route path; value = handler function
 

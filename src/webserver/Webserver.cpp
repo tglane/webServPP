@@ -9,7 +9,8 @@
 namespace webserv {
 
 Webserver::Webserver(int port, int queue_size, bool enable_https)
-        : reqCheck(), m_secure_socket(AF_INET, "/etc/ssl/certs/cert.pem", "/etc/ssl/private/key.pem"), m_socket(AF_INET) {
+        : reqCheck(), m_callback_handler{CallbackHandler::get_instance()}, m_secure_socket(AF_INET, "/etc/ssl/certs/cert.pem", "/etc/ssl/private/key.pem"), m_socket(AF_INET)
+{
     m_port = port;
     if (enable_https) {
         m_enable_https = true;
@@ -28,8 +29,12 @@ Webserver::~Webserver()
 
 void Webserver::add_app(std::unique_ptr<App> app)
 {
-    app->register_routes();
-    m_apps.push_back(std::move(app));
+    app->register_routes(m_callback_handler);
+}
+
+void Webserver::add_route(const string &route, const std::function<void(Request &, Response &)>& callback_function)
+{
+    m_callback_handler.add_route(route, callback_function);
 }
 
 void Webserver::add_middleware(std::unique_ptr<Middleware> middleware)
@@ -39,7 +44,7 @@ void Webserver::add_middleware(std::unique_ptr<Middleware> middleware)
 
 void Webserver::serve()
 {
-    if (m_enable_https)
+    if(m_enable_https)
     {
         std::cout << "Listening on https://localhost:" << m_port << " via encrypted connection" << std::endl;
     }
@@ -48,7 +53,7 @@ void Webserver::serve()
         std::cout << "Listening on http://localhost:" << m_port << std::endl;
     }
 
-    while (1)
+    while(1)
     {
         //TODO limit thread creation?
         //TODO allow use of http and https socket at the same time?
@@ -98,12 +103,11 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
 
     if(!reqCheck.check_request(*req))
     {
-        //TODO implement this in logging middleware
         res->set_code("400");
         res->add_header("Connection", "close");
         res->create_string();
         Webserver::send_response(*conn, *res);
-        std::cout << "400 --- Bad Request" << std::endl;
+        std::cout << "400 --- Bad Request" << std::endl; //TODO implement this in logging middleware
         conn->close();
         return;
     }
@@ -133,13 +137,7 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
     }
     else
     {
-        for(auto it = m_apps.begin(); it != m_apps.end(); it++)
-        {
-            if((*it)->get_callback(path, *req, *res))
-            {
-                processed = true;
-            }
-        }
+        processed = m_callback_handler.get_callback(path, *req, *res);
     }
 
     if(!processed)

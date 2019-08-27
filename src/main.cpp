@@ -30,7 +30,8 @@ int main(int argc, char** argv)
         }
         if(strcmp(argv[i], "-port") == 0)
         {
-            try {
+            try
+            {
                 string arg = argv[i+1];
                 size_t pos;
                 port = std::stoi(arg, &pos);
@@ -45,6 +46,7 @@ int main(int argc, char** argv)
 
     /* Create apps and add it to the server using w.add_app(shared_ptr<app_name> name) */
     w.add_app(std::make_unique<TestApp>());
+    w.add_route("hello", [] (webserv::Request&, webserv::Response& res) { res.set_body("Hello World!"); });
 
     /* Create middleware and add it to the server using w.add_middleware(shared_ptr<middleware_name> name) */
     //w.add_middleware(std::make_shared<LoggingMiddleware>());

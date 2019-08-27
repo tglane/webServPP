@@ -20,7 +20,7 @@ set(SOURCES
         src/main.cpp
 
         src/webserver/apps/TestApp.cpp
-)
+        src/webserver/CallbackHandler.hpp)
 
 find_package(Threads)
 
