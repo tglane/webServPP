@@ -98,14 +98,13 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
     std::cout << "---New Request---conn sock:" << conn->get_socket_descriptor() << std::endl;
 
     std::shared_ptr<Request> req = std::make_shared<Request>(conn->read_all().get());
-    std::cout << req->create_string() << std::endl; //TODO remove
+    std::cout << req->create_string() << std::endl; //TODO remove or implement functionality in logging middleware
     std::shared_ptr<Response> res = std::make_shared<Response>(req);
 
     if(!reqCheck.check_request(*req))
     {
         res->set_code("400");
         res->add_header("Connection", "close");
-        res->create_string();
         Webserver::send_response(*conn, *res);
         std::cout << "400 --- Bad Request" << std::endl; //TODO implement this in logging middleware
         conn->close();

@@ -3,6 +3,7 @@
 //
 
 #include "Request.hpp"
+#include <iostream>
 
 namespace webserv
 {
@@ -10,7 +11,7 @@ namespace webserv
 void Request::parse(const char* request)
 {
     m_request = std::string(request);
-
+    
     /* extract the request line */
     std::istringstream request_stringstream {m_request};
     std::string request_line;
@@ -54,8 +55,9 @@ void Request::parse(const char* request)
         {
             int length = stoi(this->get_header("Content-Length"));
             if(length > 0) {
-                char body[length];
+                char body[length + 1];
                 request_stringstream.read(body, length);
+                body[length] = '\0';
                 Request::parse_params(body, m_body_params);
             }
         }
