@@ -14,6 +14,7 @@
 
 #include "Request.hpp"
 #include "Response.hpp"
+#include "Cookie.hpp"
 #include "CallbackHandler.hpp"
 #include "util/RequestChecker.hpp"
 #include "apps/App.hpp"

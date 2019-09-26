@@ -76,7 +76,6 @@ std::string Request::create_string()
         (((request += it.first) += "=") += it.second) += "&";
     }
     request.pop_back();
-    //TODO append fragment to headerline (#...)
     request += " HTTP/1.1\r\n";
 
     for(const auto& it : m_headers)
@@ -90,6 +89,7 @@ std::string Request::create_string()
     }
     request.pop_back();
 
+    m_request = request;
     return request;
 }
 

@@ -16,6 +16,7 @@
 #include "Cookie.hpp"
 
 namespace webserv {
+    using std::string;
 
 /**
 * @brief Class representing a http request
@@ -45,29 +46,34 @@ public:
      */
     std::string create_string();
 
+    /** Getter and setter methods **/
     std::map<std::string, std::string> get_headers() { return m_headers; }
-
     std::string get_header(const string &key) { return get_from_map(m_headers, key); };
+    void set_header(const string& key, const string& value) { m_headers[key] = value; };
 
     std::string get_method() { return m_method; }
+    void set_method(const string& method) { m_method = method; };
 
     std::string get_resource() { return m_resource; }
+    void set_resource(const string& resource) { m_resource = resource; };
 
     std::string get_protocol() { return m_protocol; }
+    void set_protocol(const string& protocol) { m_protocol = protocol; };
 
     std::string get_path() { return m_path; }
+    void set_path(const string& path) { m_path = path; };
 
     std::map<std::string, std::string> get_params() { return m_query_params; }
-
     std::string get_param(const std::string &key) { return get_from_map(m_query_params, key); };
+    void set_param(const string& key, const string& value) { m_query_params[key] = value; };
 
     std::map<std::string, Cookie> get_cookies() { return m_cookies; }
-
     Cookie get_cookie(const std::string &cookie_name);
+    void set_cookie(const string& key, const Cookie& cookie) { m_cookies[key] = cookie; };
 
     std::map<std::string, std::string> get_post_params() { return m_body_params; }
-
     std::string get_post_param(const std::string &key) { return get_from_map(m_body_params, key); };
+    void set_post_param(const string& key, const string& value) { m_body_params[key] = value; };
 
 private:
 
@@ -101,7 +107,6 @@ private:
     std::string m_protocol;   /// protocol of this request - should be HTTP/*.*
     std::string m_resource;   /// resource addressed by this request
     std::string m_path;       /// path of the resource addressed by this request
-    std::string m_fragment; //TODO parse fragment?!
 
     std::map<std::string, std::string> m_query_params; /// contains names and values of the query string
     std::map<std::string, std::string> m_headers; /// contains names and values of the http request headers

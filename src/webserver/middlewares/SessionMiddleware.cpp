@@ -12,7 +12,7 @@ std::map<std::string, Session> SessionMiddleware::_sessions;
 void SessionMiddleware::process_request(Request& req, Response& res)
 {
     try {
-        Cookie session_cookie = req.get_cookies().at("_sessid");
+        Cookie session_cookie = req.get_cookie("_sessid");
         last_uuid = session_cookie.get_value();
         _sessions.at(session_cookie.get_value());
     } catch(std::out_of_range& e) {

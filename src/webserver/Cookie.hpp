@@ -25,6 +25,8 @@ class Cookie {
 
 public:
 
+    Cookie() : m_http_only(false), m_secure(false) {};
+
     /// Constructor
     Cookie(string name, string value, bool httpOnly = false, bool secure = false, string comment = "",
         string domain = "", string max_age = "",string path = "/", int expires = 0);
@@ -49,12 +51,12 @@ private:
 
     /**
      * Parameters of a http cookie
-     * Not all headers are to set
+     * Not all headers are to be set
      */
     string m_name;
     string m_value;
-    bool m_http_only;
-    bool m_secure;
+    bool m_http_only = false;
+    bool m_secure = false;
     string m_comment;
     string m_domain;
     string m_max_age;
