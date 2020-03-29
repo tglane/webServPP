@@ -17,10 +17,10 @@ public:
 
     /**
      * @brief Gets the http status phrase to a given status code
-     * @param code
+     * @param code http status code
      * @return string representation of status phrase
      */
-    const static std::string get_phrase(const std::string& code);
+    const static std::string get_phrase(int code);
 
     /**
      * @brief Gets the mime type for a given file extension
@@ -31,9 +31,9 @@ public:
 
 private:
 
-    static std::map<int, std::string> _codes;
+    static std::map<int, const char*> _codes;
 
-    static std::map<std::string, std::string> _mime_types; //TODO complete list of mime types
+    static std::map<const char*, const char*> _mime_types; //TODO complete list of mime types
 
 };
 

@@ -22,14 +22,18 @@ set(SOURCES
         src/webserver/apps/TestApp.cpp
 )
 
-find_package(Threads)
+find_package(OpenSSL REQUIRED)
+if(OPENSSL_FOUND)
+    link_directories(${OPENSSL_LIBRARIES})
+    include_directories(${OPENSSL_INCLUDE_DIR})
+endif(OPENSSL_FOUND)
 
-find_library(SOCKETWRAPPER_LIB socketwrapper)
-find_path(SOCKETWRAPPER_INC socketwrapper)
+find_package(Threads)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-target_link_libraries(${PROJECT_NAME} ${SOCKETWRAPPER_LIB})
-target_include_directories(${PROJECT_NAME} PUBLIC ${SOCKETWRAPPER_INC})
-
+target_link_libraries(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/lib/libsocketwrapper_static.a)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${PROJECT_NAME} ${OPENSSL_LIBRARIES})
+

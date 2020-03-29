@@ -6,6 +6,7 @@
 #define CPPWEBSERVER_REQUEST_HPP
 
 #include <string>
+#include <string_view>
 #include <sstream>
 #include <istream>
 #include <iterator>
@@ -43,19 +44,19 @@ public:
      */
     std::string create_string();
 
-    std::map<std::string, std::string> get_headers() { return m_headers; }
+    std::map<std::string_view, std::string_view> get_headers() { return m_headers; }
 
     std::string get_header(const string& key) { return get_from_map(m_headers, key); };
 
-    std::string get_method() { return m_method; }
+    std::string get_method() { return std::string(m_method); }
 
-    std::string get_resource() { return m_resource; }
+    std::string get_resource() { return std::string(m_resource); }
 
-    std::string get_protocol() { return m_protocol; }
+    std::string get_protocol() { return std::string(m_protocol); }
 
-    std::string get_path() { return m_path; }
+    std::string get_path() { return std::string(m_path); }
 
-    std::map<std::string, std::string> get_params() { return m_query_params; }
+    std::map<std::string_view, std::string_view> get_params() { return m_query_params; }
 
     std::string get_param(const std::string& key) { return get_from_map(m_query_params, key); };
 
@@ -63,7 +64,7 @@ public:
 
     Cookie get_cookie(const std::string& cookie_name);
 
-    std::map<std::string, std::string> get_post_params() { return m_body_params; }
+    std::map<std::string_view, std::string_view> get_post_params() { return m_body_params; }
 
     std::string get_post_param(const std::string& key) { return get_from_map(m_body_params, key); };
 
@@ -73,14 +74,14 @@ private:
      * Parses a http request line and stores the parameters in member variables
      * @param requestline String that contains a http request line
      */
-    void parse_requestline(const std::string& requestline);
+    void parse_requestline(std::string_view requestline);
 
     /**
      * Parses the query string into map m_params
      * @param param_container map to search
      * @param param_string
      */
-    static void parse_params(std::string&& param_string, std::map<std::string, std::string>& param_container);
+    static void parse_params(std::string_view param_string, std::map<std::string_view, std::string_view>& param_container);
 
     /**
      * Constructs cookie objects from a http request header
@@ -91,21 +92,22 @@ private:
     /**
      * Helper function
      */
-    static std::string get_from_map(const std::map<std::string, std::string>& container, const std::string& key);
+    static std::string get_from_map(const std::map<std::string_view, std::string_view>& container, const std::string& key);
 
-    std::string m_request;    /// unparsed request
+    const char* m_request;    /// unparsed request
 
-    std::string m_method;     /// http method used by this request (e.g. post, get, ...)
-    std::string m_protocol;   /// protocol of this request - should be HTTP/*.*
-    std::string m_resource;   /// resource addressed by this request
-    std::string m_path;       /// path of the resource addressed by this request
-    std::string m_fragment; //TODO parse fragment?!
+    std::string_view m_method;     /// http method used by this request (e.g. post, get, ...)
+    std::string_view m_protocol;   /// protocol of this request - should be HTTP/*.*
+    std::string_view m_resource;   /// resource addressed by this request
+    std::string_view m_path;       /// path of the resource addressed by this request
+    std::string_view m_fragment; //TODO parse fragment?!
 
-    std::map<std::string, std::string> m_query_params; /// contains names and values of the query string
-    std::map<std::string, std::string> m_headers; /// contains names and values of the http request headers
+    std::map<std::string_view, std::string_view> m_query_params; /// contains names and values of the query string
+    std::map<std::string_view, std::string_view> m_headers; /// contains names and values of the http request headers
     std::map<std::string, Cookie> m_cookies; /// contains names and values of the cookies
-    std::map<std::string, std::string> m_body_params; /// Contains post params from the requests body
+    std::map<std::string_view, std::string_view> m_body_params; /// Contains post params from the requests body
 
 };
 
 #endif //CPPWEBSERVER_REQUEST_HPP
+

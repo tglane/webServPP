@@ -1,6 +1,7 @@
 //
 // Created by timog on 16.02.19.
 //
+
 #include <string>
 #include <iostream>
 
@@ -34,22 +35,35 @@ int main(int argc, char** argv)
                 string arg = argv[i+1];
                 size_t pos;
                 port = std::stoi(arg, &pos);
-                if(pos < arg.size()) { std::cerr << "Trailing character after" << arg << std::endl; }
+                if(pos < arg.size()) 
+                { 
+                    std::cerr << "Trailing character after" << arg << std::endl; 
+                }
             }
-            catch(std::invalid_argument &ex) { std::cerr << "Invalid port number" << std::endl; }
-            catch(std::out_of_range &ex) { std::cerr << "Argument out of range" << std::endl; }
+            catch(std::invalid_argument &ex) 
+            { 
+                std::cerr << "Invalid port number" << std::endl; 
+            }
+            catch(std::out_of_range &ex) 
+            { 
+                std::cerr << "Argument out of range" << std::endl; 
+            }
         }
     }
 
     Webserver w(port, 5, enable_https);
 
-    /* Create apps and add it to the server using w.add_app(shared_ptr<app_name> name) */
-    w.add_app(std::make_unique<TestApp>());
+    /* Create apps and add it to the server using w.add_app(unique_ptr<app_name>()) */
+    w.add_app("test", std::make_unique<TestApp>());
+
+    w.add_app("index", [](Request& req, Response& res) {
+        res.set_body("Hello World!");        
+    });
 
     /* Create middleware and add it to the server using w.add_middleware(shared_ptr<middleware_name> name) */
     //w.add_middleware(std::make_shared<LoggingMiddleware>());
     w.add_middleware(std::make_unique<SessionMiddleware>());
 
     w.serve();
-
 }
+

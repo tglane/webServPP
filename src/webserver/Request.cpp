@@ -6,25 +6,24 @@
 
 void Request::parse(const char* request)
 {
-    m_request = std::string(request);
+    m_request = request;
 
     /* extract the request line */
-    std::istringstream request_stringstream {m_request};
+    std::istringstream request_stringstream(m_request);
     std::string request_line;
     getline(request_stringstream, request_line);
     this->parse_requestline(request_line);
 
     /* Parse resource to path and params */
     size_t pos_q;
-    if((pos_q = m_resource.find('?')) == string::npos)
+    if((pos_q = m_resource.find('?')) == std::string::npos)
     {
         m_path = m_resource;
     }
     else
     {
-        m_path = m_resource.substr(0, pos_q);
-        std::string param_string {m_resource.substr(pos_q + 1)};
-        this->parse_params(m_resource.substr(pos_q + 1), m_query_params);
+        m_path = std::string_view(m_resource.data(), pos_q);
+        Request::parse_params(std::string_view(m_resource.data() + pos_q + 1), m_query_params);
     }
 
     /* Read and parse request headers */
@@ -32,16 +31,15 @@ void Request::parse(const char* request)
     while(getline(request_stringstream, headerline) && headerline != "\r")
     {
         size_t pos = headerline.find(':');
-        if(pos != string::npos) {
-            m_headers.insert(std::pair<std::string, std::string>(headerline.substr(0, pos), headerline.substr(pos+2)));
-        }
+        if(pos != std::string::npos)
+            m_headers.insert({ std::string_view(headerline.data(), pos), std::string_view(headerline.data() + pos + 2) });
     }
 
     /* Read cookies and put it in m_cookies */
     auto it = m_headers.find("Cookie");
     if(it != m_headers.end())
     {
-        parse_cookies(it->second);
+        this->parse_cookies(it->second.data());
     }
 
     /* Parse POST parameters */
@@ -53,7 +51,7 @@ void Request::parse(const char* request)
             if(length > 0) {
                 char body[length];
                 request_stringstream.read(body, length);
-                this->parse_params(body, m_body_params);
+                Request::parse_params(body, m_body_params);
             }
         }
         catch(std::invalid_argument& e)
@@ -66,15 +64,22 @@ void Request::parse(const char* request)
 
 std::string Request::create_string()
 {
-    std::string request {m_method + " "};
-    (request += m_path) += "?";
+    std::string request;
+    request.reserve(1024);
+    request.append(m_method);
+    request.append(" ");
+    request.append(m_path);
+    request.append("?");
     for(const auto& it : m_query_params)
     {
-        (((request += it.first) += "=") += it.second) += "&";
+        request.append(it.first);
+        request.append("=");
+        request.append(it.second);
+        request.append("&");
     }
     request.pop_back();
     //TODO append fragment to headerline (#...)
-    request += " HTTP/1.1\r\n";
+    request.append(" HTTP/1.1\r\n");
 
     for(const auto& it : m_headers)
     {
@@ -90,7 +95,7 @@ std::string Request::create_string()
     return request;
 }
 
-Cookie Request::get_cookie(const std::string &cookie_name)
+Cookie Request::get_cookie(const std::string& cookie_name)
 {
     try
     {
@@ -102,55 +107,54 @@ Cookie Request::get_cookie(const std::string &cookie_name)
     }
 }
 
-void Request::parse_requestline(const string& requestline)
+void Request::parse_requestline(const std::string_view requestline)
 {
-    std::istringstream iss(requestline);
-    std::vector<string> requestline_split((std::istream_iterator<string>(iss)),
-                                            std::istream_iterator<string>());
+    int i, last_index = 0, vec_index = 0;
+    std::string_view tmp_store[3];
 
-    if((requestline_split.capacity() - 1) == 3)
+    for(i = 0; i < requestline.size() && vec_index < 3; i++)
     {
-        m_method = requestline_split[0];
-        m_resource = requestline_split[1];
-        m_protocol = requestline_split[2];
+        if(requestline[i] == ' ' || i + 1 == requestline.size())
+        {
+            tmp_store[vec_index] = std::string_view(requestline.data(), i);
+            last_index = i + 1;
+            vec_index++;
+        }
     }
-    else
-    {
-        return; //TODO: Add Exception here
-    }
+
+    if(vec_index != 3)
+        throw std::invalid_argument("invalid_requestline");
+
+    m_method = tmp_store[0];
+    m_resource = tmp_store[1];
+    m_protocol = tmp_store[2];
 }
 
-void Request::parse_params(string&& param_string, std::map<std::string, std::string>& param_container)
+void Request::parse_params(std::string_view param_string, std::map<std::string_view, std::string_view>& param_container)
 {
-    if(param_string.find('#') == string::npos)
+    int offset = 0;
+    for(int i = 0; i <= param_string.length(); i++)
     {
-        param_string.append("&");
-    }
-
-    int tmp = 0;
-    for(int i = 0; i < param_string.length(); i++)
-    {
-        if(param_string[i] == '&' || param_string[i] == '#')
+        if(param_string[i] == '&' || param_string[i] == '#' || i == param_string.length())
         {
-            string param = param_string.substr((size_t) tmp, (size_t) (i-tmp));
-            tmp = i + 1;
-            //std::cout << param << std::endl;
-            size_t pos = param.find('=');
-            std::pair<string, string> p(param.substr(0,pos), param.substr(pos + 1));
-            //std::cout << p.first << " | " << p.second << std::endl;
-            param_container.insert(p);
+            std::string_view param(param_string.data() + offset, i - offset);
+            size_t pos = param_string.find('=');
+            offset = i + 1;
+            if(pos != std::string::npos)
+            {
+                param_container.insert({ std::string_view(param.data(), pos), std::string_view(param.data() + pos + 1) });
+            }
         }
     }
 }
 
-void Request::parse_cookies(const string& cookies)
+void Request::parse_cookies(const std::string& cookies)
 {
     //std::cout << cookies << std::endl;
     std::istringstream iss(cookies);
-    std::vector<string> cookies_split((std::istream_iterator<string>(iss)),
-                                          std::istream_iterator<string>());
+    std::vector<std::string> cookies_split((std::istream_iterator<std::string>(iss)),
+                                          std::istream_iterator<std::string>());
 
-    //for(auto it = cookies_split.begin(); it != cookies_split.end(); it++)
     for(auto& it : cookies_split)
     {
         if(it.find(';') != string::npos)
@@ -159,18 +163,20 @@ void Request::parse_cookies(const string& cookies)
         }
         size_t pos = it.find('=');
         Cookie c(it.substr(0, pos), it.substr(pos + 1));
-        m_cookies.insert(std::pair<string, Cookie>(it.substr(0, pos), c));
+        m_cookies.insert(std::pair<std::string, Cookie>(it.substr(0, pos), c));
     }
+
 }
 
-std::string Request::get_from_map(const std::map<std::string, std::string>& container, const std::string &key)
+std::string Request::get_from_map(const std::map<std::string_view, std::string_view>& container, const std::string& key)
 {
     try
     {
-        return container.at(key);
+        return std::string(container.at(key));
     }
     catch(std::out_of_range& e)
     {
         return "";
     }
 }
+

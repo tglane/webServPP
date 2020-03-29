@@ -30,10 +30,15 @@ Webserver::~Webserver()
     m_socket.close();
 }
 
-void Webserver::add_app(std::unique_ptr<App> app)
+void Webserver::add_app(const char* key, std::unique_ptr<App> app)
 {
     app->register_routes();
-    m_apps.push_back(std::move(app));
+    m_apps[key] = std::move(app);
+}
+
+void Webserver::add_app(const char* key, const std::function<void(Request&, Response&)>& direct_call)
+{
+    // TODO
 }
 
 void Webserver::add_middleware(std::unique_ptr<Middleware> middleware)
@@ -94,73 +99,72 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
 
     std::cout << "---New Request---conn sock:" << conn->get_socket_descriptor() << std::endl;
 
-    std::shared_ptr<Request> req = std::make_shared<Request>(conn->read_all().get());
-    std::cout << req->create_string() << std::endl; //TODO remove
-    std::shared_ptr<Response> res = std::make_shared<Response>(req);
+    // Request req(reinterpret_cast<char*>(conn->read_vector(1024).data()));
+    Request req(reinterpret_cast<char*>(conn->read_all_vector().data()));
 
-    if(!reqCheck.check_request(*req))
+    std::cout << req.create_string() << std::endl; // TODO remove
+    Response res(req);
+
+    if(!reqCheck.check_request(req))
     {
-        //TODO implement this in logging middleware
-        res->set_code("400");
-        res->add_header("Connection", "close");
-        res->create_string();
-        Webserver::send_response(*conn, *res);
+        res.set_code(400);
+        res.add_header("Connection", "close");
+        res.create_string();
+        Webserver::send_response(*conn, res);
         std::cout << "400 --- Bad Request" << std::endl;
         conn->close();
         return;
     }
 
     /* Process request from all registered middlewares */
-    for(auto& it : m_middlewares)
+    for(const auto& it : m_middlewares)
     {
-        it->process_request(*req, *res);
+        it->process_request(req, res); // TODO async?
     }
 
     /* Try to process the called route from a registered app, css file or javascript file */
-    bool processed = false;
-    std::string&& path = req->get_path();
-    std::size_t pos = path.rfind('.');
+    std::string path = req.get_path();
+    size_t pos = path.rfind('.');
     if(pos != string::npos)
     {
+        /* Send a requested file to the client without invoking an app */
+        // TODO improve way of sending files to the client
         try
         {
-            res->add_header("Content-Type", Statuscodes::get_mime_type(path.substr(pos)));
-            res->set_body_from_file(path);
-            processed = true;
+            res.add_header("Content-Type", Statuscodes::get_mime_type(path.substr(pos)));
+            res.set_body_from_file(path);
         }
         catch(std::invalid_argument& e)
         {
-            processed = false;
+            Webserver::send_error(*conn, res, 404);
+            return;
         }
     }
     else
     {
-        for(auto it = m_apps.begin(); it != m_apps.end(); it++)
+        /* Calling an app to handle the request */
+        std::string_view app_name(); // TOTO create string_view from regex /.../ of path
+
+        const auto& it = m_apps.find(app_name);
+        if(it != m_apps.end())
+            it->second->get_callback(path, req, res);
+        else
         {
-            if((*it)->get_callback(path, *req, *res))
-            {
-                processed = true;
-            }
+            // TODO try to get index app as default
+            Webserver::send_error(*conn, res, 404);
+            return;
         }
     }
 
-    if(!processed)
+    /* If route was processed process response from registered middlewares */
+    for(const auto& it : m_middlewares)
     {
-        res->set_code("404");
-        res->set_body("<!DOCTYPE html><html><head><title>404 - Not Found</title><body><h1>404 - Not Found</h1></body></html>\r\n");
-    }
-    else
-    {
-        /* If route was processed process response from registered middlewares */
-        for(auto& it : m_middlewares)
-        {
-            it->process_response(*req, *res);
-        }
+        it->process_response(req, res); // TODO async?
     }
 
     //TODO add connection: keep-alive feature
-    res->add_header("Connection", "close");
-    Webserver::send_response(*conn, *res);
+    res.add_header("Connection", "close");
+    Webserver::send_response(*conn, res);
     conn->close();
 
     /* TODO remove when finished. Measure time for request handling */
@@ -169,7 +173,16 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
 
 }
 
-void Webserver::send_response(socketwrapper::TCPSocket& conn, Response& response)
+void Webserver::send_response(socketwrapper::TCPSocket& conn, Response& res)
 {
-    conn.write(response.create_string().c_str());
+    conn.write(res.create_string().c_str());
 }
+
+void Webserver::send_error(socketwrapper::TCPSocket& conn, Response& res, int code)
+{
+    res.set_code(404);
+    res.set_body("<!DOCTYPE html><html><head><title>404 - Not Found</title><body><h1>404 - Not Found</h1></body></html>\r\n");
+    conn.write(res.create_string().c_str());
+    conn.close();
+}
+
