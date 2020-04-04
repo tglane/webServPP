@@ -4,18 +4,35 @@
 
 #include "Request.hpp"
 
+#include <iostream>
+
+Request::Request(const char* unparsed_request)
+{
+    try
+    {
+        this->parse(unparsed_request);
+    }
+    catch(const std::invalid_argument& ia) { throw ia; }
+}
+
 void Request::parse(const char* request)
 {
-    m_request = request;
+    size_t pos_q;
+    m_request = std::string(request);
 
     /* extract the request line */
     std::istringstream request_stringstream(m_request);
-    std::string request_line;
-    getline(request_stringstream, request_line);
-    this->parse_requestline(request_line);
+    // std::string request_line;
+    // getline(request_stringstream, request_line);
+    // this->parse_requestline(request_line);
+
+    // std::string_view full_request_view(m_request);
+    pos_q = m_request.find("\r\n");
+    if(pos_q == std::string::npos)
+        throw std::invalid_argument("invalid_request");
+    this->parse_requestline(std::string_view(m_request.data(), pos_q + 1));
 
     /* Parse resource to path and params */
-    size_t pos_q;
     if((pos_q = m_resource.find('?')) == std::string::npos)
     {
         m_path = m_resource;
@@ -23,16 +40,26 @@ void Request::parse(const char* request)
     else
     {
         m_path = std::string_view(m_resource.data(), pos_q);
-        Request::parse_params(std::string_view(m_resource.data() + pos_q + 1), m_query_params);
+        Request::parse_params(std::string_view(m_resource.data() + pos_q + 1, m_protocol.data() - (m_resource.data() + pos_q + 1) - 1), m_query_params);
     }
 
     /* Read and parse request headers */
-    std::string headerline;
-    while(getline(request_stringstream, headerline) && headerline != "\r")
+    size_t start_pos = m_request.find("\r\n") + 2, mid_pos, end_pos;
+    std::string_view headerline(m_request.data() + start_pos);
+    while(headerline != "\r\n" || headerline != "\r" || headerline != "\n")
     {
-        size_t pos = headerline.find(':');
-        if(pos != std::string::npos)
-            m_headers.insert({ std::string_view(headerline.data(), pos), std::string_view(headerline.data() + pos + 2) });
+        mid_pos = headerline.find(':');
+        end_pos = headerline.find("\r\n");
+        if(end_pos == 0)
+            break;
+
+        if(start_pos == std::string_view::npos || mid_pos == std::string_view::npos || end_pos == std::string_view::npos)
+            throw std::invalid_argument("invalid_request");
+
+        m_headers.insert({ std::string_view(headerline.data(), mid_pos), std::string_view(headerline.data() + mid_pos + 2, end_pos - (mid_pos + 2)) });
+ 
+        start_pos = end_pos;
+        headerline = std::string_view(headerline.data() + end_pos + 2);
     }
 
     /* Read cookies and put it in m_cookies */
@@ -45,18 +72,26 @@ void Request::parse(const char* request)
     /* Parse POST parameters */
     if(m_method == "POST" || m_method == "post")
     {
+        std::cout << "POST" << std::endl;
+        // TODO Test!
         try
         {
             int length = stoi(this->get_header("Content-Length"));
-            if(length > 0) {
-                char body[length];
-                request_stringstream.read(body, length);
+            if(length > 0) 
+            {
+                std::string_view body(headerline.data() + end_pos + 2);
                 Request::parse_params(body, m_body_params);
+                std::cout << "test" << std::endl;
+                std::cout << body << std::endl;
+
+                // char body[length];
+                // request_stringstream.read(body, length);
+                // Request::parse_params(body, m_body_params);
             }
         }
         catch(std::invalid_argument& e)
         {
-            /* Exception occurs if header "Content-Length" is 0.
+            /* Exception occurs if header "Content-Length" is not set.
                No exception handling needed */
         }
     }
@@ -64,34 +99,29 @@ void Request::parse(const char* request)
 
 std::string Request::create_string()
 {
-    std::string request;
-    request.reserve(1024);
-    request.append(m_method);
-    request.append(" ");
-    request.append(m_path);
-    request.append("?");
+    // TODO Fix this to work with string_view
+
+    std::string request(m_method.data());
+    ((request += " ") += m_path.data()) += "?";
     for(const auto& it : m_query_params)
     {
-        request.append(it.first);
-        request.append("=");
-        request.append(it.second);
-        request.append("&");
+        (((request += it.first.data()) += "=") += it.second.data()) += "&";
     }
     request.pop_back();
-    //TODO append fragment to headerline (#...)
-    request.append(" HTTP/1.1\r\n");
-
+    // TODO append fragment to headerline (#...)
+    request += " HTTP/1.1\r\n";
+   
     for(const auto& it : m_headers)
     {
-        (((request += it.first) += ": ") += it.second) += "\r\n";
+        (((request += it.first.data()) += ": ") += it.second.data()) += "\r\n";
     }
     request += "\r\n";
     for(const auto& it : m_body_params)
     {
-        (((request += it.first) += "=") += it.second) += "&";
+        (((request += it.first.data()) += "=") += it.second.data()) += "&";
     }
     request.pop_back();
-
+    
     return request;
 }
 
@@ -107,16 +137,15 @@ Cookie Request::get_cookie(const std::string& cookie_name)
     }
 }
 
-void Request::parse_requestline(const std::string_view requestline)
+void Request::parse_requestline(std::string_view requestline)
 {
-    int i, last_index = 0, vec_index = 0;
+    int last_index = 0, vec_index = 0;
     std::string_view tmp_store[3];
-
-    for(i = 0; i < requestline.size() && vec_index < 3; i++)
+    for(int i = 0; i < requestline.size() && vec_index < 3; i++)
     {
         if(requestline[i] == ' ' || i + 1 == requestline.size())
         {
-            tmp_store[vec_index] = std::string_view(requestline.data(), i);
+            tmp_store[vec_index] = std::string_view(requestline.data() + last_index, i - last_index);
             last_index = i + 1;
             vec_index++;
         }
@@ -125,9 +154,9 @@ void Request::parse_requestline(const std::string_view requestline)
     if(vec_index != 3)
         throw std::invalid_argument("invalid_requestline");
 
-    m_method = tmp_store[0];
-    m_resource = tmp_store[1];
-    m_protocol = tmp_store[2];
+    this->m_method = tmp_store[0];
+    this->m_resource = tmp_store[1];
+    this->m_protocol = tmp_store[2];
 }
 
 void Request::parse_params(std::string_view param_string, std::map<std::string_view, std::string_view>& param_container)
@@ -139,11 +168,12 @@ void Request::parse_params(std::string_view param_string, std::map<std::string_v
         {
             std::string_view param(param_string.data() + offset, i - offset);
             size_t pos = param_string.find('=');
-            offset = i + 1;
             if(pos != std::string::npos)
             {
-                param_container.insert({ std::string_view(param.data(), pos), std::string_view(param.data() + pos + 1) });
+                param_container.insert({ std::string_view(param.data(), pos), 
+                    std::string_view(param.data() + pos + 1, i - offset - pos - 1) });
             }
+            offset = i + 1;
         }
     }
 }

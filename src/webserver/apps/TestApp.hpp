@@ -12,6 +12,8 @@ class TestApp : public App {
 
     void register_routes() override;
 
+    void showTesti(Request& req, Response& res);
+
     void show(Request& req, Response& res);
 
     void showRedirect(Request& req, Response& res);

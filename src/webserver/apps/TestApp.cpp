@@ -3,13 +3,19 @@
 //
 
 #include "TestApp.hpp"
-
+#include <iostream>
 void TestApp::register_routes()
 {
-    add_route("/test/normal", std::bind(&TestApp::show, this, std::placeholders::_1, std::placeholders::_2));
-    add_route("/test/redirect", std::bind(&TestApp::showRedirect, this, std::placeholders::_1, std::placeholders::_2));
-    add_route("/test", std::bind(&TestApp::showTemplate, this, std::placeholders::_1, std::placeholders::_2));
-    add_route("/test/ajax", std::bind(&TestApp::ajaxTest, this, std::placeholders::_1, std::placeholders::_2));
+    add_route("/normal", std::bind(&TestApp::show, this, std::placeholders::_1, std::placeholders::_2));
+    add_route("/redirect", std::bind(&TestApp::showRedirect, this, std::placeholders::_1, std::placeholders::_2));
+    add_route("/testi", std::bind(&TestApp::showTesti, this, std::placeholders::_1, std::placeholders::_2));
+    add_route("/lol", std::bind(&TestApp::showTemplate, this, std::placeholders::_1, std::placeholders::_2));
+    add_route("/ajax", std::bind(&TestApp::ajaxTest, this, std::placeholders::_1, std::placeholders::_2));
+}
+
+void TestApp::showTesti(Request& req, Response& res)
+{
+    res.set_body("LOL");
 }
 
 void TestApp::show(Request& req, Response& res)
@@ -19,11 +25,12 @@ void TestApp::show(Request& req, Response& res)
 
 void TestApp::showRedirect(Request& req, Response& res)
 {
-    res.send_redirect("/test");
+    res.send_redirect("/test/normal");
 }
 
 void TestApp::showTemplate(Request& req, Response& res)
 {
+    std::cout << "DEBUG test " << std::endl;
     std::list<std::string> l {"Hallo", "dies", "ist", "ein", "Test", "der", "Template-Enginge", "!"};
 
     res.set_body_from_template("test.tmpl.html",

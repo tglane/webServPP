@@ -8,7 +8,6 @@
 #include <list>
 #include <map>
 #include <thread>
-#include <regex>
 #include <vector>
 #include <socketwrapper/TCPSocket.hpp>
 #include <socketwrapper/SSLTCPSocket.hpp>
@@ -44,7 +43,7 @@ public:
      * @param app containign sub routes
      */
     void add_app(const char* key, std::unique_ptr<App> app);
-
+    void add_app(const std::string& key, std::unique_ptr<App> app);
     /**
      * Adds a given lambda to handle a given route
      * @param key name of the app in http routes
@@ -94,7 +93,7 @@ private:
     socketwrapper::TCPSocket m_socket;
     socketwrapper::SSLTCPSocket m_secure_socket;
 
-    std::map<const char*, std::unique_ptr<App>> m_apps;
+    std::map<std::string , std::unique_ptr<App>> m_apps;
 
     std::list<std::unique_ptr<Middleware>> m_middlewares; /// List with registered Middelwares
 

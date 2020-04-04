@@ -30,7 +30,7 @@ public:
      * Directly creates a request object from a given request in string representation
      * @param request_string string containing an http request
      */
-    explicit Request(const char* request_string) { this->parse(request_string); }
+    explicit Request(const char* request_string);
 
     /**
      * Parses a given http request into the calling request object structure
@@ -94,7 +94,7 @@ private:
      */
     static std::string get_from_map(const std::map<std::string_view, std::string_view>& container, const std::string& key);
 
-    const char* m_request;    /// unparsed request
+    std::string m_request;    /// unparsed request
 
     std::string_view m_method;     /// http method used by this request (e.g. post, get, ...)
     std::string_view m_protocol;   /// protocol of this request - should be HTTP/*.*

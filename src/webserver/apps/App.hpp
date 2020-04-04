@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <map>
 #include <functional>
 
@@ -34,12 +35,12 @@ public:
      * @param route
      * @return true if a route was found, false else
      */
-    bool get_callback(std::string route, Request& req, Response& res);
+    bool get_callback(std::string_view route, Request& req, Response& res);
 
 protected:
 
     /// Protected default constructor to avoid instances of App
-    explicit App() = default;
+    explicit App();
 
     /**
      * Adds a given route and its callback method to m_routes
@@ -53,3 +54,4 @@ protected:
 };
 
 #endif //CPPWEBSERVER_APP_HPP
+

@@ -33,6 +33,12 @@ Webserver::~Webserver()
 void Webserver::add_app(const char* key, std::unique_ptr<App> app)
 {
     app->register_routes();
+    m_apps[std::string(key)] = std::move(app);
+}
+
+void Webserver::add_app(const std::string& key, std::unique_ptr<App> app)
+{
+    app->register_routes();
     m_apps[key] = std::move(app);
 }
 
@@ -100,9 +106,17 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
     std::cout << "---New Request---conn sock:" << conn->get_socket_descriptor() << std::endl;
 
     // Request req(reinterpret_cast<char*>(conn->read_vector(1024).data()));
-    Request req(reinterpret_cast<char*>(conn->read_all_vector().data()));
+    Request req;
+    try
+    {
+        std::vector<char> tmp = conn->read_all_vector();
+        std::cout << "[DEBUG] " << tmp.data() << std::endl;
+        req.parse(tmp.data());
+        // req.parse(conn->read_all_vector().data());
+    }
+    catch(const std::invalid_argument& ia) { std::cout << "invalid_request" << std::endl; return; }
 
-    std::cout << req.create_string() << std::endl; // TODO remove
+    // std::cout << req.create_string() << std::endl; // TODO remove
     Response res(req);
 
     if(!reqCheck.check_request(req))
@@ -118,12 +132,10 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
 
     /* Process request from all registered middlewares */
     for(const auto& it : m_middlewares)
-    {
-        it->process_request(req, res); // TODO async?
-    }
+        it->process_request(req, res);
 
     /* Try to process the called route from a registered app, css file or javascript file */
-    std::string path = req.get_path();
+    std::string&& path = req.get_path();
     size_t pos = path.rfind('.');
     if(pos != string::npos)
     {
@@ -143,14 +155,19 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
     else
     {
         /* Calling an app to handle the request */
-        std::string_view app_name(); // TOTO create string_view from regex /.../ of path
-
-        const auto& it = m_apps.find(app_name);
-        if(it != m_apps.end())
-            it->second->get_callback(path, req, res);
-        else
+        std::string_view app_name(path.data() + path.find_first_not_of('/'));
+        std::string_view app_route;
+        if(app_name.find('/') != std::string::npos)
         {
-            // TODO try to get index app as default
+            app_route = std::string_view(app_name.data() + app_name.find_first_of('/'));
+            app_name = std::string_view(app_name.data(), app_name.find('/'));
+        }
+
+        const auto& it = m_apps.find(std::string(app_name).data());
+        if(it == m_apps.end() || 
+            !it->second->get_callback((app_route.size() == 0 || app_route == "/") ? "/index" : app_route, req, res))
+        {
+            // TODO try to get index app if its defined
             Webserver::send_error(*conn, res, 404);
             return;
         }
@@ -158,9 +175,7 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
 
     /* If route was processed process response from registered middlewares */
     for(const auto& it : m_middlewares)
-    {
-        it->process_response(req, res); // TODO async?
-    }
+        it->process_response(req, res);
 
     //TODO add connection: keep-alive feature
     res.add_header("Connection", "close");
