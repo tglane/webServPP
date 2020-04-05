@@ -23,6 +23,8 @@ class Webserver;
 class App {
 
 public:
+    
+    ~App() = default;
 
     /**
      * Needs to be implemented by all Apps
@@ -41,6 +43,11 @@ protected:
 
     /// Protected default constructor to avoid instances of App
     explicit App() = default;
+    App(App&) = delete;
+    App& operator=(App&) = delete;
+    App(App&&) = default;
+    App& operator=(App&&) = default;
+
 
     /**
      * Adds a given route and its callback method to m_routes

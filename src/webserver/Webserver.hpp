@@ -16,6 +16,7 @@
 #include "Response.hpp"
 #include "util/RequestChecker.hpp"
 #include "apps/App.hpp"
+#include "apps/DirectApp.hpp"
 #include "middlewares/Middleware.hpp"
 
 /**

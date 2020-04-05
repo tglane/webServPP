@@ -9,6 +9,7 @@ set(SOURCES
         src/webserver/templating/Jinja2CppLight.cpp
         src/webserver/templating/stringhelper.cpp
         src/webserver/apps/App.cpp
+        src/webserver/apps/DirectApp.cpp
         src/webserver/Webserver.cpp
         src/webserver/middlewares/SessionMiddleware.cpp
         src/webserver/middlewares/LoggingMiddleware.cpp

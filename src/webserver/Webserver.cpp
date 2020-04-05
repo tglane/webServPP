@@ -68,7 +68,7 @@ void Webserver::add_app(const std::string& key, std::unique_ptr<App> app)
 
 void Webserver::add_app(const char* key, const std::function<void(Request&, Response&)>& direct_call)
 {
-    // TODO
+    m_apps[key] = std::make_unique<DirectApp>(direct_call);
 }
 
 void Webserver::add_middleware(std::unique_ptr<Middleware> middleware)
@@ -87,7 +87,7 @@ void Webserver::serve()
         std::cout << "Listening on http://localhost:" << m_port << std::endl;
     }
 
-    while(1)
+    while(true)
     {
         //TODO limit thread creation?
         //TODO allow use of http and https socket at the same time?

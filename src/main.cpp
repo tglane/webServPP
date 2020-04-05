@@ -77,7 +77,7 @@ int main(int argc, char** argv)
     /* Create apps and add it to the server using w.add_app(unique_ptr<app_name>()) */
     w.add_app("test", std::make_unique<TestApp>());
 
-    w.add_app("index", [](Request& req, Response& res) {
+    w.add_app("lol", [](Request& req, Response& res) {
         res.set_body("Hello World!");        
     });
 
