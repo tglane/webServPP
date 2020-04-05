@@ -30,12 +30,22 @@ public:
      * @param port to listen on
      * @param queue_size for the listen(int queue_size) of the internal tcp socket
      */
-    Webserver(int port, int queue_size, bool enable_https = false);
+    Webserver(int port, int queue_size);
+    
+    Webserver(int port, int queue_size, const char* cert_path, const char* key_path);
+
+    /**
+     * @brief Move contructor
+     * @param other Webserver rvalue to be moved
+     */
+    Webserver(Webserver&& other);
 
     /**
      * @brief Destructor
      */
     ~Webserver();
+
+    Webserver& operator=(Webserver&& other);
 
     /**
      * Adds a given app to m_apps and registers the routes of the app
@@ -43,7 +53,9 @@ public:
      * @param app containign sub routes
      */
     void add_app(const char* key, std::unique_ptr<App> app);
+    
     void add_app(const std::string& key, std::unique_ptr<App> app);
+
     /**
      * Adds a given lambda to handle a given route
      * @param key name of the app in http routes
@@ -97,7 +109,7 @@ private:
 
     std::list<std::unique_ptr<Middleware>> m_middlewares; /// List with registered Middelwares
 
-    RequestChecker reqCheck;
+    RequestChecker req_check;
 
 };
 

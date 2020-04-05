@@ -40,7 +40,7 @@ public:
 protected:
 
     /// Protected default constructor to avoid instances of App
-    explicit App();
+    explicit App() = default;
 
     /**
      * Adds a given route and its callback method to m_routes

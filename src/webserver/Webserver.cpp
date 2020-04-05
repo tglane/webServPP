@@ -6,34 +6,58 @@
 
 #include <ctime>
 
-Webserver::Webserver(int port, int queue_size, bool enable_https)
-    : reqCheck(), m_secure_socket(AF_INET, "/etc/ssl/certs/cert.pem", "/etc/ssl/private/key.pem"), m_socket(AF_INET)
+Webserver::Webserver(int port, int queue_size)
+    : m_port(port), m_enable_https(false), m_socket(AF_INET), m_secure_socket(AF_INET, "", ""), req_check()
 {
-    m_port = port;
-    if(enable_https)
-    {
-        m_enable_https = true;
-        m_secure_socket.bind("0.0.0.0", m_port);
-        m_secure_socket.listen(queue_size);
-    }
-    else
-    {
-        m_socket.bind("0.0.0.0", m_port);
-        m_socket.listen(queue_size);
-    }
+    m_socket.bind("0.0.0.0", m_port);
+    m_socket.listen(queue_size);
 
-    std::cout << m_socket.get_socket_descriptor() << std::endl;
+    m_secure_socket.close();
+}
+
+Webserver::Webserver(int port, int queue_size, const char* cert_path, const char* key_path)
+    : m_port(port), m_enable_https(true), m_socket(AF_INET), m_secure_socket(AF_INET, cert_path, key_path), req_check()
+{
+    m_secure_socket.bind("0.0.0.0", m_port);
+    m_secure_socket.listen(queue_size);
+
+    m_socket.close();
+}
+
+Webserver::Webserver(Webserver&& other)
+    : m_port(other.m_port), m_enable_https(other.m_enable_https), m_socket(std::move(other.m_socket)), 
+        m_secure_socket(std::move(other.m_secure_socket)), req_check()
+{
+    this->m_apps = std::move(other.m_apps);
+    this->m_middlewares = std::move(other.m_middlewares);
+
+    other.m_port = 0;
 }
 
 Webserver::~Webserver()
 {
     m_socket.close();
+    m_secure_socket.close();
+}
+
+Webserver& Webserver::operator=(Webserver&& other)
+{
+    this->m_port = other.m_port;
+    this->m_enable_https = other.m_enable_https;
+    this->m_socket = std::move(other.m_socket);
+    this->m_secure_socket = std::move(other.m_secure_socket);
+    this->m_apps = std::move(other.m_apps);
+    this->m_middlewares = std::move(other.m_middlewares);
+
+    other.m_port = 0;
+
+    return *this;
 }
 
 void Webserver::add_app(const char* key, std::unique_ptr<App> app)
 {
     app->register_routes();
-    m_apps[std::string(key)] = std::move(app);
+    m_apps[key] = std::move(app);
 }
 
 void Webserver::add_app(const std::string& key, std::unique_ptr<App> app)
@@ -119,7 +143,7 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
     // std::cout << req.create_string() << std::endl; // TODO remove
     Response res(req);
 
-    if(!reqCheck.check_request(req))
+    if(!req_check.check_request(req))
     {
         res.set_code(400);
         res.add_header("Connection", "close");
