@@ -7,7 +7,7 @@
 namespace webserv
 {
 
-std::map<int, std::string> Statuscodes::_codes = {
+std::map<int, const char*> Statuscodes::_codes = {
         /* 1xx - Information */
         {100, "Continue"},
         {101, "Switching Protocols"},
@@ -81,7 +81,7 @@ std::map<int, std::string> Statuscodes::_codes = {
         {510, "Not Extended"}
 };
 
-std::map<std::string, std::string> Statuscodes::_mime_types {
+std::map<const char*, const char*> Statuscodes::_mime_types {
         /* text mime types */
         {".js", "text/javascript"},
         {".css", "text/css"},
@@ -99,9 +99,9 @@ std::map<std::string, std::string> Statuscodes::_mime_types {
         {".bmp", "image/bmp"}
 };
 
-const std::string Statuscodes::get_phrase(const std::string& code)
+const std::string Statuscodes::get_phrase(int code)
 {
-    const auto& it = _codes.find(std::stoi(code));
+    const auto& it = _codes.find(code);
     if(it != _codes.end())
     {
         return (*it).second;
@@ -114,7 +114,7 @@ const std::string Statuscodes::get_phrase(const std::string& code)
 
 const std::string Statuscodes::get_mime_type(const std::string& file_extension)
 {
-    const auto& it = _mime_types.find(file_extension);
+    const auto& it = _mime_types.find(file_extension.c_str());
     if(it != _mime_types.end())
     {
         return it->second;
@@ -126,3 +126,4 @@ const std::string Statuscodes::get_mime_type(const std::string& file_extension)
 }
 
 }
+

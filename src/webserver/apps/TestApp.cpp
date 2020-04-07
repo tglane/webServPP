@@ -6,10 +6,10 @@
 
 void TestApp::register_routes()
 {
-    add_route("/test/normal", std::bind(&TestApp::show, this, std::placeholders::_1, std::placeholders::_2));
-    add_route("/test/redirect", std::bind(&TestApp::showRedirect, this, std::placeholders::_1, std::placeholders::_2));
-    add_route("/test", std::bind(&TestApp::showTemplate, this, std::placeholders::_1, std::placeholders::_2));
-    add_route("/test/ajax", std::bind(&TestApp::ajaxTest, this, std::placeholders::_1, std::placeholders::_2));
+    add_route("/normal", std::bind(&TestApp::show, this, std::placeholders::_1, std::placeholders::_2));
+    add_route("/redirect", std::bind(&TestApp::showRedirect, this, std::placeholders::_1, std::placeholders::_2));
+    add_route("/index", std::bind(&TestApp::showTemplate, this, std::placeholders::_1, std::placeholders::_2));
+    add_route("/ajax", std::bind(&TestApp::ajaxTest, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 void TestApp::show(webserv::Request& req, webserv::Response& res)
@@ -19,7 +19,7 @@ void TestApp::show(webserv::Request& req, webserv::Response& res)
 
 void TestApp::showRedirect(webserv::Request& req, webserv::Response& res)
 {
-    res.send_redirect("/test");
+    res.send_redirect("/test/normal");
 }
 
 void TestApp::showTemplate(webserv::Request& req, webserv::Response& res)
@@ -39,3 +39,4 @@ void TestApp::ajaxTest(webserv::Request& req, webserv::Response& res)
         res.set_body(req.get_post_param("new_text"));
     }
 }
+
