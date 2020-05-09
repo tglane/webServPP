@@ -16,6 +16,16 @@
 /* Include app headers */
 #include "webserver/apps/TestApp.hpp"
 
+void add_routes(webserv::Webserver& w)
+{
+    /* Create apps and add it to the server using w.add_app("route name", std::unique_ptr<"app_name">) */
+    w.add_app("test", std::make_unique<TestApp>());
+
+    w.add_app("lol", [](webserv::Request& req, webserv::Response& res) {
+        res.set_body("Hello World! This is an direct response.");
+    });
+}
+
 int main(int argc, char** argv)
 {
     bool enable_https = false;
@@ -24,12 +34,12 @@ int main(int argc, char** argv)
     /* Get input parameters */
     for(int i = 0; i < argc; i++)
     {
-        if(strcmp(argv[i], "-https") == 0)
+        if(strcmp(argv[i], "--https") == 0 || strcmp(argv[i], "-h") == 0)
         {
             enable_https = true;
             port = 443;
         }
-        if(strcmp(argv[i], "-port") == 0)
+        if(strcmp(argv[i], "--port") == 0 || strcmp(argv[i], "-p") == 0)
         {
             try {
                 std::string arg(argv[i+1]);
@@ -47,7 +57,7 @@ int main(int argc, char** argv)
                 std::cerr << "Argument out of range" << std::endl; 
             }
         }
-        if(strcmp(argv[i], "-queue") == 0)
+        if(strcmp(argv[i], "--queue") == 0 || strcmp(argv[i], "-q") == 0)
         {
             try {
                 std::string arg(argv[i + 1]);
@@ -67,24 +77,20 @@ int main(int argc, char** argv)
         }
     }
 
-    // if(enable_https)
-    //     Webserver w = Webserver(port, queue_size, "/etc/ssl/certs/cert.pem", "etc/ssl/private/key.pem");
-    // else
-    //     Webserver w = Webserver(port, queue_size);
+    if(enable_https)
+    {
+        webserv::Webserver w(port, queue_size, "/etc/ssl/certs/cert.pem", "etc/ssl/private/key.pem");
+        add_routes(w);
+        w.add_middleware(std::make_unique<webserv::SessionMiddleware>());
+        w.serve();
+    }
+    else
+    {
+        webserv::Webserver w(port, queue_size);
+        add_routes(w);
+        w.add_middleware(std::make_unique<webserv::SessionMiddleware>());
+        w.serve();
+    }
 
-    webserv::Webserver w(port, queue_size);
-
-    /* Create apps and add it to the server using w.add_app(unique_ptr<app_name>()) */
-    w.add_app("test", std::make_unique<TestApp>());
-
-    w.add_app("lol", [](webserv::Request& req, webserv::Response& res) {
-        res.set_body("Hello World!");        
-    });
-
-    /* Create middleware and add it to the server using w.add_middleware(shared_ptr<middleware_name> name) */
-    //w.add_middleware(std::make_shared<LoggingMiddleware>());
-    w.add_middleware(std::make_unique<webserv::SessionMiddleware>());
-
-    w.serve();
 }
 

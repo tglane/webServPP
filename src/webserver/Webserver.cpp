@@ -218,14 +218,16 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
 
 void Webserver::send_response(socketwrapper::TCPSocket& conn, Response& res)
 {
-    conn.write(res.create_string().c_str());
+    std::string tmp = res.create_string();
+    conn.write(tmp.c_str(), tmp.size());
 }
 
 void Webserver::send_error(socketwrapper::TCPSocket& conn, Response& res, int code)
 {
     res.set_code(404);
     res.set_body("<!DOCTYPE html><html><head><title>404 - Not Found</title><body><h1>404 - Not Found</h1></body></html>\r\n");
-    conn.write(res.create_string().c_str());
+    std::string tmp = res.create_string();
+    conn.write(tmp.c_str(), tmp.size());
     conn.close();
 }
 

@@ -33,7 +33,7 @@ find_package(Threads)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-target_link_libraries(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/lib/libsocketwrapper_static.a)
+target_link_libraries(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/lib/libsocketwrapper.a)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(${PROJECT_NAME} ${OPENSSL_LIBRARIES})

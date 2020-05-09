@@ -27,7 +27,7 @@ void TestApp::showTemplate(webserv::Request& req, webserv::Response& res)
     std::list<std::string> l {"Hallo", "dies", "ist", "ein", "Test", "der", "Template-Enginge", "!"};
 
     res.set_body_from_template("test.tmpl.html",
-                               std::map<std::string, std::variant<string, int, std::list<std::string>>> {{"headline", "Ja moin"},
+                               std::map<std::string, std::variant<std::string, int, std::list<std::string>>> {{"headline", "Ja moin"},
                                                                                                         {"text",     "löl hier ist ja jz doch was xD"},
                                                                                                         {"its",      l},
                                                                                                         {"it",       4}});
