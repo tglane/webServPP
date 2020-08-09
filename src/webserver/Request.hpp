@@ -26,6 +26,9 @@ class Request {
 
 public:
 
+    /** 
+     * Delete default constructor because a completely empty http request makes no sense at all
+     */
     Request() = default;
 
     /**
@@ -33,6 +36,14 @@ public:
      * @param request_string string containing an http request
      */
     explicit Request(const char* request_string);
+
+    Request(const Request& other) = default;
+
+    Request(Request&& other) noexcept;
+
+    Request& operator=(const Request& other) = default;
+
+    Request& operator=(Request&& other);
 
     /**
      * Parses a given http request into the calling request object structure
@@ -44,31 +55,31 @@ public:
      * @brief Returns a string representation of the request object
      * @return
      */
-    std::string create_string();
+    std::string to_string() const;
 
-    std::map<std::string_view, std::string_view> get_headers() { return m_headers; }
+    std::map<std::string_view, std::string_view> get_headers() const { return m_headers; }
 
-    std::string get_header(const string &key) { return get_from_map(m_headers, key); };
+    std::string get_header(const std::string& key) const;
 
-    std::string get_method() { return std::string(m_method); }
+    std::string get_method() const { return std::string(m_method); }
 
-    std::string get_resource() { return std::string(m_resource); }
+    std::string get_resource() const { return std::string(m_resource); }
 
-    std::string get_protocol() { return std::string(m_protocol); }
+    std::string get_protocol() const { return std::string(m_protocol); }
 
-    std::string get_path() { return std::string(m_path); }
+    std::string get_path() const { return std::string(m_path); }
 
-    std::map<std::string_view, std::string_view> get_params() { return m_query_params; }
+    std::map<std::string_view, std::string_view> get_params() const { return m_query_params; }
 
-    std::string get_param(const std::string &key) { return get_from_map(m_query_params, key); };
+    std::string get_param(const std::string& key) const;
 
-    std::map<std::string, Cookie> get_cookies() { return m_cookies; }
+    std::map<std::string, Cookie> get_cookies() const { return m_cookies; }
 
-    Cookie get_cookie(const std::string &cookie_name);
+    Cookie get_cookie(const std::string &cookie_name) const;
 
-    std::map<std::string_view, std::string_view> get_post_params() { return m_body_params; }
+    std::map<std::string_view, std::string_view> get_post_params() const { return m_body_params; }
 
-    std::string get_post_param(const std::string &key) { return get_from_map(m_body_params, key); };
+    std::string get_post_param(const std::string &key) const;
 
 private:
 
@@ -91,18 +102,13 @@ private:
      */
     void parse_cookies(const std::string &cookies);
 
-    /**
-     * Helper function
-     */
-    static std::string get_from_map(const std::map<std::string_view, std::string_view>& container, const std::string& key);
-
     std::string m_request;    /// unparsed request
 
     std::string_view m_method;     /// http method used by this request (e.g. post, get, ...)
     std::string_view m_protocol;   /// protocol of this request - should be HTTP/*.*
     std::string_view m_resource;   /// resource addressed by this request
     std::string_view m_path;       /// path of the resource addressed by this request
-    std::string_view m_fragment; //TODO parse fragment?!
+    std::string_view m_fragment;   /// TODO parse fragment?!
 
     std::map<std::string_view, std::string_view> m_query_params; /// contains names and values of the query string
     std::map<std::string_view, std::string_view> m_headers; /// contains names and values of the http request headers

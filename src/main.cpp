@@ -18,12 +18,15 @@
 
 void add_routes(webserv::Webserver& w)
 {
-    /* Create apps and add it to the server using w.add_app("route name", std::unique_ptr<"app_name">) */
+    /* Create apps and add it to the server using w.add_app("route name", std::unique_ptr<"app_name">()) */
     w.add_app("test", std::make_unique<TestApp>());
 
     w.add_app("lol", [](webserv::Request& req, webserv::Response& res) {
         res.set_body("Hello World! This is an direct response.");
     });
+
+    /* Create middleware and add it to the webserver using add_middleware(std::make_unique<"middleware_name">() */
+    w.add_middleware(std::make_unique<webserv::SessionMiddleware>());
 }
 
 int main(int argc, char** argv)
@@ -81,14 +84,12 @@ int main(int argc, char** argv)
     {
         webserv::Webserver w(port, queue_size, "/etc/ssl/certs/cert.pem", "etc/ssl/private/key.pem");
         add_routes(w);
-        w.add_middleware(std::make_unique<webserv::SessionMiddleware>());
         w.serve();
     }
     else
     {
         webserv::Webserver w(port, queue_size);
         add_routes(w);
-        w.add_middleware(std::make_unique<webserv::SessionMiddleware>());
         w.serve();
     }
 

@@ -9,7 +9,7 @@
 namespace webserv {
 
 Webserver::Webserver(int port, int queue_size)
-    : m_port(port), m_enable_https(false), m_socket(AF_INET), m_secure_socket(AF_INET, "", ""), req_check()
+    : m_port(port), m_enable_https(false), m_socket(AF_INET), m_secure_socket(AF_INET, "", "")
 {
     m_socket.bind("0.0.0.0", m_port);
     m_socket.listen(queue_size);
@@ -18,7 +18,7 @@ Webserver::Webserver(int port, int queue_size)
 }
 
 Webserver::Webserver(int port, int queue_size, const char* cert_path, const char* key_path)
-    : m_port(port), m_enable_https(true), m_socket(AF_INET), m_secure_socket(AF_INET, cert_path, key_path), req_check()
+    : m_port(port), m_enable_https(true), m_socket(AF_INET), m_secure_socket(AF_INET, cert_path, key_path)
 {
     m_secure_socket.bind("0.0.0.0", m_port);
     m_secure_socket.listen(queue_size);
@@ -26,9 +26,9 @@ Webserver::Webserver(int port, int queue_size, const char* cert_path, const char
     m_socket.close();
 }
 
-Webserver::Webserver(Webserver&& other)
+Webserver::Webserver(Webserver&& other) noexcept
     : m_port(other.m_port), m_enable_https(other.m_enable_https), m_socket(std::move(other.m_socket)), 
-        m_secure_socket(std::move(other.m_secure_socket)), req_check()
+        m_secure_socket(std::move(other.m_secure_socket))
 {
     this->m_apps = std::move(other.m_apps);
     this->m_middlewares = std::move(other.m_middlewares);
@@ -75,18 +75,18 @@ void Webserver::add_app(const char* key, const std::function<void(Request&, Resp
 
 void Webserver::add_middleware(std::unique_ptr<Middleware> middleware)
 {
-    m_middlewares.push_back(std::move(middleware));
+    m_middlewares.emplace_back(std::move(middleware));
 }
 
 void Webserver::serve()
 {
     if (m_enable_https)
     {
-        std::cout << "Listening on https://localhost:" << m_port << " via encrypted connection" << std::endl;
+        std::cout << "Listening on https://localhost:" << m_port << " via encrypted connection" << '\n';
     }
     else
     {
-        std::cout << "Listening on http://localhost:" << m_port << std::endl;
+        std::cout << "Listening on http://localhost:" << m_port << '\n';
     }
 
     while(true)
@@ -100,19 +100,19 @@ void Webserver::serve()
             if(m_enable_https)
             {
                 auto connection_socket = m_secure_socket.accept();
-                std::thread t = std::thread(&Webserver::handle_connection, this, std::move(connection_socket));
+                std::thread t(&Webserver::handle_connection, this, std::move(connection_socket));
                 t.detach();
             }
             else
             {
                 auto connection_socket = m_socket.accept();
-                std::thread t = std::thread(&Webserver::handle_connection, this, std::move(connection_socket));
+                std::thread t(&Webserver::handle_connection, this, std::move(connection_socket));
                 t.detach();
             }
         }
         catch(socketwrapper::SocketAcceptingException &ex)
         {
-            std::cout << ex.what() << std::endl;
+            std::cout << ex.what() << '\n';
         }
     }
 }
@@ -131,27 +131,32 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
     }
     catch(socketwrapper::ReadBytesAvailableException &e) { return; } //TODO ?
 
-    std::cout << "---New Request---conn sock:" << conn->get_socket_descriptor() << std::endl;
+    std::cout << "---New Request---conn sock:" << conn->get_socket_descriptor() << '\n';
 
     // Request req(reinterpret_cast<char*>(conn->read_vector(1024).data()));
     Request req;
     try
     {
-        std::vector<char> tmp = conn->read_all_vector();
-        std::cout << "[DEBUG] " << tmp.data() << std::endl;
-        req.parse(tmp.data());
-        // req.parse(conn->read_all_vector().data());
+        // std::vector<char> tmp = conn->read_all_vector();
+        // std::cout << "[DEBUG] " << tmp.data() << std::endl;
+        // req.parse(tmp.data());
+        req.parse(conn->read_all_vector().data());
     }
-    catch(const std::invalid_argument& ia) { std::cout << "invalid_request" << std::endl; return; }
+    catch(const std::invalid_argument& ia) 
+    { 
+        std::cout << "invalid_request" << '\n'; 
+        return;
+    }
 
-    // std::cout << req.create_string() << std::endl; // TODO remove
+    std::cout << req.to_string() << '\n';
+
     Response res(req);
 
-    if(!req_check.check_request(req))
+    if(!check_request(req))
     {
         res.set_code(400);
         res.add_header("Connection", "close");
-        res.create_string();
+        res.to_string();
         Webserver::send_response(*conn, res);
         std::cout << "400 --- Bad Request" << std::endl;
         conn->close();
@@ -191,9 +196,9 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
             app_name = std::string_view(app_name.data(), app_name.find('/'));
         }
 
-        const auto& it = m_apps.find(std::string(app_name).data());
+        const auto& it = m_apps.find(app_name.data());
         if(it == m_apps.end() || 
-            !it->second->get_callback((app_route.size() == 0 || app_route == "/") ? "/index" : app_route, req, res))
+            !it->second->get_callback((app_route.empty() || app_route == "/") ? "/index" : app_route, req, res))
         {
             // TODO try to get index app if its defined
             Webserver::send_error(*conn, res, 404);
@@ -218,7 +223,7 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
 
 void Webserver::send_response(socketwrapper::TCPSocket& conn, Response& res)
 {
-    std::string tmp = res.create_string();
+    std::string tmp = res.to_string();
     conn.write(tmp.c_str(), tmp.size());
 }
 
@@ -226,7 +231,7 @@ void Webserver::send_error(socketwrapper::TCPSocket& conn, Response& res, int co
 {
     res.set_code(404);
     res.set_body("<!DOCTYPE html><html><head><title>404 - Not Found</title><body><h1>404 - Not Found</h1></body></html>\r\n");
-    std::string tmp = res.create_string();
+    std::string tmp = res.to_string();
     conn.write(tmp.c_str(), tmp.size());
     conn.close();
 }

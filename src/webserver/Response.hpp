@@ -37,7 +37,7 @@ public:
      * Creates the response line, the header fields and the response body
      * @return string representation of the response
      */
-    std::string create_string();
+    std::string to_string();
 
     /**
      * @brief Reads a template file and substitutes its placeholders to build the http body and sets m_body
@@ -82,7 +82,7 @@ public:
 
     void set_body(const std::string& body);
 
-    int get_code() { return m_code; }
+    int get_code() const { return m_code; }
 
 private:
 

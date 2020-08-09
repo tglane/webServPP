@@ -59,8 +59,8 @@ protected:
      */
     void add_route(std::string route, const std::function<void(Request&, Response&)>& handler);
 
-    std::map<std::string, std::function<void(Request&, Response&)>> m_routes; /// key = route path; value = handler function
-
+    /// key = route path; value = handler function
+    std::map<std::string, std::function<void(Request&, Response&)>> m_routes; 
 };
 
 }

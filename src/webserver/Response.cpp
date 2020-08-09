@@ -14,7 +14,7 @@ namespace webserv
 
 std::mutex Response::c_file_mutex;
 
-std::string Response::create_string()
+std::string Response::to_string()
 {
     std::string response;
 
@@ -141,45 +141,36 @@ void Response::add_header(const std::string& key, const std::string& value)
 {
     auto it = m_headers.find(key);
     if(it != m_headers.end())
-    {
         it->second = value;
-    } else {
+    else
         m_headers.insert(std::pair<std::string, std::string>(key, value));
-    }
 }
 
 void Response::add_cookie(Cookie&& cookie)
 {
     auto it = m_cookies.find(cookie.get_name());
     if(it != m_cookies.end())
-    {
         it->second = cookie;
-    } else {
+    else
         m_cookies.insert(std::pair<std::string, Cookie>(cookie.get_name(), cookie));
-    }
 }
 
 void Response::set_content_type(const std::string& contentType)
 {
     const auto& it = m_headers.find("Content-Type");
     if(it != m_headers.end())
-    {
         it->second = contentType;
-    }
     else
-    {
         m_headers.insert(std::pair<std::string, std::string>("Content-Type", contentType));
-    }
 }
 
 std::string Response::get_phrase(int code)
 {
     std::string codephrase = Statuscodes::get_phrase(code);
     if(codephrase.empty())
-    {
         this->set_code(500);
         return "Unknown statuscode requested in code";
-    }
+
     return codephrase;
 }
 

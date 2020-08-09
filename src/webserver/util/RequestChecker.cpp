@@ -7,17 +7,8 @@
 namespace webserv
 {
 
-//TODO add more checks
-bool RequestChecker::check_request(Request& req)
-{
-    if(!check_requestline(req.get_method(), req.get_resource(), req.get_protocol())) { return false; }
-    //if(!check_host(req)) { return false; }
-
-    return true;
-}
-
 //TODO improve requestline check
-bool RequestChecker::check_requestline(const string& method, const string& resource, const string& protocol)
+static bool check_requestline(const std::string& method, const std::string& resource, const std::string& protocol)
 {
     if(method != "post" && method != "POST" && method != "get" && method != "GET" &&
        method != "head" && method != "HEAD" && method != "put" && method != "PUT" &&
@@ -37,7 +28,7 @@ bool RequestChecker::check_requestline(const string& method, const string& resou
     return true;
 }
 
-bool RequestChecker::check_host(Request &req)
+static bool check_host(const Request &req)
 {
     try {
         req.get_headers().at("Host");
@@ -45,6 +36,16 @@ bool RequestChecker::check_host(Request &req)
     } catch(std::out_of_range& e) {
         return false;
     }
+}
+
+//TODO add more checks
+bool check_request(const Request& req)
+{
+    if(!check_requestline(req.get_method(), req.get_resource(), req.get_protocol())) 
+        return false;
+    //if(!check_host(req)) { return false; }
+
+    return true;
 }
 
 }

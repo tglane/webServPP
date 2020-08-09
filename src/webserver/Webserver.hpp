@@ -41,7 +41,7 @@ public:
      * @brief Move contructor
      * @param other Webserver rvalue to be moved
      */
-    Webserver(Webserver&& other);
+    Webserver(Webserver&& other) noexcept;
 
     /**
      * @brief Destructor
@@ -111,8 +111,6 @@ private:
     std::map<std::string , std::unique_ptr<App>> m_apps;
 
     std::list<std::unique_ptr<Middleware>> m_middlewares; /// List with registered Middelwares
-
-    RequestChecker req_check;
 
 };
 
