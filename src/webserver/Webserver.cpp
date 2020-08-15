@@ -4,9 +4,23 @@
 
 #include "Webserver.hpp"
 
+#define ENABLE_TIME_MEASUREMENT
+#ifdef ENABLE_TIME_MEASUREMENT
 #include <ctime>
+#endif
 
 namespace webserv {
+
+/**
+ * "Shortcut" to send a Response object over a socket to the caller
+ * @param conn TCPSocket reference representing the connection to the caller
+ * @param res Response reference to the response to send to the caller to answer his response
+ */
+void send_response(socketwrapper::TCPSocket& conn, Response& res)
+{
+    std::string tmp = res.to_string();
+    conn.write<char>(tmp.c_str(), tmp.size());
+}
 
 Webserver::Webserver(int port, int queue_size)
     : m_port(port), m_enable_https(false), m_socket(AF_INET), m_secure_socket(AF_INET, "", "")
@@ -68,7 +82,12 @@ void Webserver::add_app(const std::string& key, std::unique_ptr<App> app)
     m_apps[key] = std::move(app);
 }
 
-void Webserver::add_app(const char* key, const std::function<void(Request&, Response&)>& direct_call)
+void Webserver::add_app(const char* key, const std::function<void(const Request&, Response&)>& direct_call)
+{
+    m_apps[key] = std::make_unique<DirectApp>(direct_call);
+}
+
+void Webserver::add_app(const std::string& key, const std::function<void(const Request&, Response&)>& direct_call)
 {
     m_apps[key] = std::make_unique<DirectApp>(direct_call);
 }
@@ -78,7 +97,7 @@ void Webserver::add_middleware(std::unique_ptr<Middleware> middleware)
     m_middlewares.emplace_back(std::move(middleware));
 }
 
-void Webserver::serve()
+void Webserver::serve() const
 {
     if (m_enable_https)
     {
@@ -117,11 +136,14 @@ void Webserver::serve()
     }
 }
 
-void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn)
+void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn) const
 {
-    time_t begin = clock(); //TODO remove when finished
 
-    /* wait until data is available */
+#ifdef ENABLE_TIME_MEASUREMENT
+    time_t begin = clock();
+#endif
+
+    /* Wait until data is available */
     try
     {
         while(conn->bytes_available() == 0)
@@ -131,25 +153,18 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
     }
     catch(socketwrapper::ReadBytesAvailableException &e) { return; } //TODO ?
 
-    std::cout << "---New Request---conn sock:" << conn->get_socket_descriptor() << '\n';
+    // std::cout << "---New Request---conn sock:" << conn->get_socket_descriptor() << '\n';
 
-    // Request req(reinterpret_cast<char*>(conn->read_vector(1024).data()));
     Request req;
     try
     {
-        // std::vector<char> tmp = conn->read_all_vector();
-        // std::cout << "[DEBUG] " << tmp.data() << std::endl;
-        // req.parse(tmp.data());
-        req.parse(conn->read_all_vector().data());
+        req.parse(conn->read_all_vector<char>().data());
     }
     catch(const std::invalid_argument& ia) 
     { 
         std::cout << "invalid_request" << '\n'; 
         return;
     }
-
-    std::cout << req.to_string() << '\n';
-
     Response res(req);
 
     if(!check_request(req))
@@ -157,7 +172,7 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
         res.set_code(400);
         res.add_header("Connection", "close");
         res.to_string();
-        Webserver::send_response(*conn, res);
+        send_response(*conn, res);
         std::cout << "400 --- Bad Request" << std::endl;
         conn->close();
         return;
@@ -176,33 +191,32 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
         // TODO improve way of sending files to the client
         try
         {
-            res.add_header("Content-Type", Statuscodes::get_mime_type(path.substr(pos)));
+            res.add_header("Content-Type", get_mime_type(path.substr(pos)));
             res.set_body_from_file(path);
         }
         catch(std::invalid_argument &e)
         {
-            Webserver::send_error(*conn, res, 404);
+            res.set_code(404);
+            res.set_body("<!DOCTYPE html><html><head><title>404 - Not Found</title><body><h1>404 - Not Found</h1></body></html>\r\n");
             return;
         }
     }
     else
     {
         /* Calling an app to handle the request */
-        std::string_view app_name(path.data() + path.find_first_not_of('/'));
-        std::string_view app_route;
+        std::string app_name(path.data() + path.find_first_not_of('/'));
+        std::string app_route;
         if(app_name.find('/') != std::string::npos)
         {
-            app_route = std::string_view(app_name.data() + app_name.find_first_of('/'));
-            app_name = std::string_view(app_name.data(), app_name.find('/'));
+            app_route = std::string(app_name.data() + app_name.find_first_of('/'));
+            app_name = std::string(app_name.data(), app_name.find('/'));
         }
 
-        const auto& it = m_apps.find(app_name.data());
-        if(it == m_apps.end() || 
-            !it->second->get_callback((app_route.empty() || app_route == "/") ? "/index" : app_route, req, res))
+        const auto& it = m_apps.find(app_name);
+        if(it == m_apps.end() || !it->second->get_callback(app_route, req, res))
         {
-            // TODO try to get index app if its defined
-            Webserver::send_error(*conn, res, 404);
-            return;
+            res.set_code(404);
+            res.set_body("<!DOCTYPE html><html><head><title>404 - Not Found</title><body><h1>404 - Not Found</h1></body></html>\r\n");
         }
     }
 
@@ -212,29 +226,15 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
 
     //TODO add connection: keep-alive feature
     res.add_header("Connection", "close");
-    Webserver::send_response(*conn, res);
+    std::cout << res.to_string() << '\n';
+    send_response(*conn, res);
     conn->close();
 
-    /* TODO remove when finished. Measure time for request handling */
+#ifdef ENABLE_TIME_MEASUREMENT
     time_t end = clock();
-    std::cout << "Response-time: " << difftime(end, begin) / CLOCKS_PER_SEC << "\n" << std::endl;
+    std::cout << "Response-time: " << difftime(end, begin) / CLOCKS_PER_SEC << "\n" << '\n';
+#endif
 
 }
 
-void Webserver::send_response(socketwrapper::TCPSocket& conn, Response& res)
-{
-    std::string tmp = res.to_string();
-    conn.write(tmp.c_str(), tmp.size());
 }
-
-void Webserver::send_error(socketwrapper::TCPSocket& conn, Response& res, int code)
-{
-    res.set_code(404);
-    res.set_body("<!DOCTYPE html><html><head><title>404 - Not Found</title><body><h1>404 - Not Found</h1></body></html>\r\n");
-    std::string tmp = res.to_string();
-    conn.write(tmp.c_str(), tmp.size());
-    conn.close();
-}
-
-}
-

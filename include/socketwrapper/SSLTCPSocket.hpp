@@ -55,37 +55,9 @@ public:
      * @return std::unique_ptr<SSLTCPSocket>
      * @throws SocketAcceptingException
      */
-    std::unique_ptr<SSLTCPSocket> accept();
+    std::unique_ptr<SSLTCPSocket> accept() const;
 
-    std::future<bool> accept_async(const std::function<bool(SSLTCPSocket&)>& callback);
-
-    /**
-     * @brief Reads "size" bytes from an existing ssl/tsl connection and returns it as char*
-     * @param int size
-     * @return buffer with read data
-     * @throws SocketReadException
-     */
-    std::unique_ptr<char[]> read(size_t size) const override;
-
-    std::vector<char> read_vector(size_t size) const override;
-
-    /**
-     * @brief Writes content of param buffer in a existing ssl/tsl connection
-     * @param buffer
-     * @throws SocketWriteException
-     */
-    void write(const char* buffer, size_t size) const override;
-
-    void write(const std::vector<char>& buffer) const override;
-
-    /**
-     * @brief Reads all currently available data to a buffer and returns it
-     * @return buffer with read data
-     * @throws SocketReadException
-     */
-    std::unique_ptr<char[]> read_all() const override;
-
-    std::vector<char> read_all_vector() const override;
+    std::future<bool> accept_async(const std::function<bool(SSLTCPSocket&)>& callback) const;
 
 protected:
 
@@ -106,8 +78,15 @@ protected:
      * @param buffer pointer to the buffer to read into
      * @param size size to read from the socket
      */
-    int read_raw(char* const buffer, size_t size) const;
+    int read_raw(char* const buffer, size_t size) const override;
 
+    /**
+     * @brief Write data to the raw unix socket from a given buffer
+     * @param buffer with data to send
+     * @param size of the data to send over the socket
+     */
+    void write_raw(const char* buffer, size_t size) const override;
+    
     SSL_CTX* m_context; /// SSL context used for the ssl connection
     SSL* m_ssl; /// SSL Object
 
@@ -120,4 +99,3 @@ protected:
 }
 
 #endif //SOCKETWRAPPER_SSLTCPSOCKET_HPP
-

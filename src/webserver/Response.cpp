@@ -166,11 +166,12 @@ void Response::set_content_type(const std::string& contentType)
 
 std::string Response::get_phrase(int code)
 {
-    std::string codephrase = Statuscodes::get_phrase(code);
+    std::string codephrase = get_statuscode_phrase(code);
     if(codephrase.empty())
+    {
         this->set_code(500);
         return "Unknown statuscode requested in code";
-
+    }
     return codephrase;
 }
 

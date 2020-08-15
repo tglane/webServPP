@@ -12,16 +12,15 @@ class TestApp : public webserv::App {
 
     void register_routes() override;
 
-    void show(webserv::Request& req, webserv::Response& res);
+    void show(const webserv::Request& req, webserv::Response& res);
 
-    void showRedirect(webserv::Request& req, webserv::Response& res);
+    void showRedirect(const webserv::Request& req, webserv::Response& res);
 
-    void showTemplate(webserv::Request& req, webserv::Response& res);
+    void showTemplate(const webserv::Request& req, webserv::Response& res);
 
-    void ajaxTest(webserv::Request& req, webserv::Response& res);
+    void ajaxTest(const webserv::Request& req, webserv::Response& res);
 
 };
-
 
 #endif //CPPWEBSERVER_TESTAPP_HPP
 

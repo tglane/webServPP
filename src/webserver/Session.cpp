@@ -15,7 +15,7 @@ Session::Session(std::string cookiename, std::string sessid)
     }
     else
     {
-        m_sessid = UUID4Generator::instance().generate_uuid4();
+        m_sessid = generate_uuid4();
     }
     m_cookiename = std::move(cookiename);
 }
@@ -27,7 +27,7 @@ bool Session::is_empty()
 
 void Session::renew_session()
 {
-    m_sessid = UUID4Generator::instance().generate_uuid4();
+    m_sessid = generate_uuid4();
     m_data.clear();
 }
 

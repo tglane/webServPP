@@ -2,12 +2,15 @@
 // Created by timog on 01.03.19.
 //
 
-#include "Statuscodes.hpp"
+#include "Util.hpp"
+
+#include <map>
 
 namespace webserv
 {
 
-std::map<int, const char*> Statuscodes::_codes = {
+std::map<int, const char*> _codes = 
+{
         /* 1xx - Information */
         {100, "Continue"},
         {101, "Switching Protocols"},
@@ -81,7 +84,8 @@ std::map<int, const char*> Statuscodes::_codes = {
         {510, "Not Extended"}
 };
 
-std::map<const char*, const char*> Statuscodes::_mime_types {
+std::map<const char*, const char*> _mime_types 
+{
         /* text mime types */
         {".js", "text/javascript"},
         {".css", "text/css"},
@@ -99,7 +103,7 @@ std::map<const char*, const char*> Statuscodes::_mime_types {
         {".bmp", "image/bmp"}
 };
 
-const std::string Statuscodes::get_phrase(int code)
+std::string get_statuscode_phrase(int code)
 {
     const auto& it = _codes.find(code);
     if(it != _codes.end())
@@ -112,7 +116,7 @@ const std::string Statuscodes::get_phrase(int code)
     };
 }
 
-const std::string Statuscodes::get_mime_type(const std::string& file_extension)
+std::string get_mime_type(const std::string& file_extension)
 {
     const auto& it = _mime_types.find(file_extension.c_str());
     if(it != _mime_types.end())

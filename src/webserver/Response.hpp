@@ -16,7 +16,7 @@
 
 #include "Cookie.hpp"
 #include "Request.hpp"
-#include "util/Statuscodes.hpp"
+#include "util/Util.hpp"
 
 namespace webserv {
 

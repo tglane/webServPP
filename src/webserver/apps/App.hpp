@@ -6,7 +6,6 @@
 #define CPPWEBSERVER_APP_HPP
 
 #include <memory>
-#include <string>
 #include <string_view>
 #include <map>
 #include <functional>
@@ -30,6 +29,14 @@ public:
     ~App() = default;
 
     /**
+     * Searches for the callback function mapped to route and executes it
+     * @param route route to be called
+     * @param req reference to the calling request
+     * @param res reference to the response to be send to the caller
+     */
+    virtual bool operator()(const std::string& route, const Request& req, Response& res) const;
+
+    /**
      * Needs to be implemented by all Apps
      * Call addRoute with all routes to add from this method
      */
@@ -40,7 +47,7 @@ public:
      * @param route
      * @return true if a route was found, false else
      */
-    bool get_callback(std::string_view route, Request& req, Response& res);
+    bool get_callback(const std::string& route, const Request& req, Response& res) const;
 
 protected:
 
@@ -57,10 +64,10 @@ protected:
      * @param route string representing the http route
      * @param handler callback method for the route -> must be implemented by the app!
      */
-    void add_route(std::string route, const std::function<void(Request&, Response&)>& handler);
+    void add_route(std::string_view route, const std::function<void(const Request&, Response&)>& handler);
 
     /// key = route path; value = handler function
-    std::map<std::string, std::function<void(Request&, Response&)>> m_routes; 
+    std::map<std::string, std::function<void(const Request&, Response&)>> m_routes; 
 };
 
 }

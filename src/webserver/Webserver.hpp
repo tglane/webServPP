@@ -14,7 +14,7 @@
 
 #include "Request.hpp"
 #include "Response.hpp"
-#include "util/RequestChecker.hpp"
+#include "util/Util.hpp"
 #include "apps/App.hpp"
 #include "apps/DirectApp.hpp"
 #include "middlewares/Middleware.hpp"
@@ -64,7 +64,9 @@ public:
      * @param key name of the app in http routes
      * @param direct_response function to handle requests to specified route
      */
-    void add_app(const char* key, const std::function<void(Request&, Response&)>& direct_response);
+    void add_app(const char* key, const std::function<void(const Request&, Response&)>& direct_call);
+
+    void add_app(const std::string& key, const std::function<void(const Request&, Response&)>& direct_call);
 
     /**
      * Adds a given middelware to m_middelwares to call processRequest() and processResponse()
@@ -76,7 +78,7 @@ public:
     /**
      * @brief starts the main loop of the webserver to handle incoming requests
      */
-    void serve();
+    void serve() const;
     
 private:
 
@@ -84,22 +86,7 @@ private:
      * @brief handles a connection and returns an answer to the caller
      * @param conn socket connection to the client
      */
-    void handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn);
-
-    /**
-     * @brief Sends a requested response to a client
-     * @param conn socket connection to client
-     * @param res response object
-     */
-   static void send_response(socketwrapper::TCPSocket& conn, Response& res);
-    
-    /**
-     * @breif Sends an pre-defined error message to the client, containing a given status code
-     * @param conn socket connected to the client
-     * @param res response object to send
-     * @param code http status code to send
-     */
-    static void send_error(socketwrapper::TCPSocket& conn, Response& res, int code);
+    void handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn) const;
 
     int m_port;
     bool m_enable_https = false;
@@ -117,4 +104,3 @@ private:
 }
 
 #endif //CPPWEBSERVER_WEBSERVER_HPP
-

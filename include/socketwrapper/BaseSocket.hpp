@@ -11,6 +11,7 @@
 #include <string_view>
 #include <vector>
 #include <future>
+#include <mutex>
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -81,6 +82,8 @@ protected:
 
     int resolve_hostname(const char* host_name, sockaddr_in* addr_out) const;
 
+    mutable std::mutex m_mutex;
+
     sockaddr_in m_sockaddr_in;
 
     int m_sockfd;
@@ -96,4 +99,3 @@ protected:
 }
 
 #endif //SOCKETWRAPPER_BASESOCKET_HPP
-

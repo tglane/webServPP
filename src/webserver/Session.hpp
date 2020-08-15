@@ -8,7 +8,7 @@
 #include <string>
 #include <map>
 
-#include "util/UUID4Generator.hpp"
+#include "util/Util.hpp"
 #include "Cookie.hpp"
 
 namespace webserv {

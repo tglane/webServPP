@@ -21,8 +21,14 @@ void add_routes(webserv::Webserver& w)
     /* Create apps and add it to the server using w.add_app("route name", std::unique_ptr<"app_name">()) */
     w.add_app("test", std::make_unique<TestApp>());
 
-    w.add_app("lol", [](webserv::Request& req, webserv::Response& res) {
+    w.add_app("lol", [](const webserv::Request& req, webserv::Response& res) 
+    {
         res.set_body("Hello World! This is an direct response.");
+    });
+
+    w.add_app("", [](const webserv::Request& req, webserv::Response& res) 
+    {
+        res.set_body("LUL was geht ab?");
     });
 
     /* Create middleware and add it to the webserver using add_middleware(std::make_unique<"middleware_name">() */
@@ -42,7 +48,7 @@ int main(int argc, char** argv)
             enable_https = true;
             port = 443;
         }
-        if(strcmp(argv[i], "--port") == 0 || strcmp(argv[i], "-p") == 0)
+        else if(strcmp(argv[i], "--port") == 0 || strcmp(argv[i], "-p") == 0)
         {
             try {
                 std::string arg(argv[i+1]);
@@ -60,7 +66,7 @@ int main(int argc, char** argv)
                 std::cerr << "Argument out of range" << std::endl; 
             }
         }
-        if(strcmp(argv[i], "--queue") == 0 || strcmp(argv[i], "-q") == 0)
+        else if(strcmp(argv[i], "--queue") == 0 || strcmp(argv[i], "-q") == 0)
         {
             try {
                 std::string arg(argv[i + 1]);

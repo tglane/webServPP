@@ -3,6 +3,7 @@
 //
 
 #include "SessionMiddleware.hpp"
+#include "../util/Util.hpp"
 
 namespace webserv
 {
@@ -16,7 +17,7 @@ void SessionMiddleware::process_request(Request& req, Response& res)
         last_uuid = session_cookie.get_value();
         _sessions.at(session_cookie.get_value());
     } catch(std::out_of_range& e) {
-        last_uuid = UUID4Generator::instance().generate_uuid4();
+        last_uuid = generate_uuid4();
         _sessions.emplace(last_uuid, Session("_sessid", last_uuid));
     }
 
