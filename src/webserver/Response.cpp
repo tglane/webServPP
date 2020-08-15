@@ -77,17 +77,19 @@ void Response::set_body_from_template(const std::string& templateFile,
     c_file_mutex.unlock();
 
     /* Substitue template file placeholders with the given values */
-    Jinja2CppLight::Template aTemplate(htmlTemplate);
+    Jinja2CppLight::Template jinja_templ(htmlTemplate);
 
     for(const auto& it : values)
     {
         /* Substitute a string */
         try {
-            aTemplate.setValue(it.first, std::get<std::string>(it.second));
+            jinja_templ.setValue(it.first, std::get<std::string>(it.second));
+            continue;
         } catch (const std::bad_variant_access&) {}
         /* Substitute an int */
         try {
-            aTemplate.setValue(it.first, std::get<int>(it.second));
+            jinja_templ.setValue(it.first, std::get<int>(it.second));
+            continue;
         } catch (const std::bad_variant_access&) {}
         /* Substitute a list of strings */
         try {
@@ -96,11 +98,12 @@ void Response::set_body_from_template(const std::string& templateFile,
             {
                 tmp.addValue(ite);
             }
-            aTemplate.setValue(it.first, tmp);
+            jinja_templ.setValue(it.first, tmp);
+            continue;
         } catch (const std::bad_variant_access&) {}
     }
 
-    this->set_body(aTemplate.render());
+    this->set_body(jinja_templ.render());
 }
 
 void Response::set_body_from_file(const std::string &bodyFile)
