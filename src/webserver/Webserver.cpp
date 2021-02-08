@@ -158,7 +158,8 @@ void Webserver::handle_connection(std::unique_ptr<socketwrapper::TCPSocket> conn
     Request req;
     try
     {
-        req.parse(conn->read_all_vector<char>().data());
+        req.parse(conn->read_vector<char>(1024).data());
+        // req.parse(conn->read_all_vector<char>().data());
     }
     catch(const std::invalid_argument& ia) 
     { 
